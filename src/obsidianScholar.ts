@@ -45,6 +45,16 @@ export class ObsidianScholar {
 		};
 	}
 
+	detachAllUnpinnedLeaves() {
+		// Reference: https://github.com/hdykokd/obsidian-advanced-close-tab/blob/76fefd6dea37cc9ee6ae6daf50850ba80f2f27d2/src/main.ts#L87
+		this.app.workspace.iterateRootLeaves((leaf) => {
+			if (leaf.getViewState().state.pinned) return;
+			sleep(0).then(() => {
+				leaf.detach();
+			});
+		});
+	}
+
 	async getAllLocalPaperData(): Promise<StructuredPaperData[]> {
 		return this.app.vault
 			.getMarkdownFiles()
@@ -98,6 +108,12 @@ export class ObsidianScholar {
 	) {
 		let template = await this.createFileWithTemplate(paperData);
 
+		// When we want to open the pdf, we'd better close all the windows
+		// in the current workspace
+		if (this.settings.openPdfAfterDownload && paperData.pdfPath) {
+			this.detachAllUnpinnedLeaves();
+		}
+
 		//notification if the file already exists
 		if (await this.app.vault.adapter.exists(pathToFile)) {
 			new Notice(FILE_ALREADY_EXISTS);
@@ -115,6 +131,23 @@ export class ObsidianScholar {
 						paperData.pdfPath
 					) as TFile
 				);
+		}
+	}
+
+	async openPaper(pathToFile: string, paperData: StructuredPaperData) {
+		if (this.settings.openPdfAfterDownload) {
+			this.detachAllUnpinnedLeaves();
+
+			this.app.workspace.openLinkText(pathToFile, pathToFile, true);
+			let leaf = this.app.workspace.getLeaf("split", "vertical");
+			paperData.pdfPath &&
+				leaf.openFile(
+					this.app.vault.getAbstractFileByPath(
+						paperData.pdfPath
+					) as TFile
+				);
+		} else {
+			this.app.workspace.openLinkText(pathToFile, pathToFile);
 		}
 	}
 
@@ -192,7 +225,9 @@ export class ObsidianScholar {
 		let paperFilename = this.constructFileName(paperData);
 
 		if (!paperData.pdfUrl) {
-			new Notice("No pdf url found. You might need to find the PDF manually.");
+			new Notice(
+				"No pdf url found. You might need to find the PDF manually."
+			);
 		} else {
 			// console.log("Downloading pdf...");
 			paperData.pdfPath = await this.downloadPdf(
