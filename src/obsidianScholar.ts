@@ -27,6 +27,11 @@ export class ObsidianScholar {
 	getPaperDataFromLocalFile(file: TFile): StructuredPaperData {
 		let fileCache = this.app.metadataCache.getFileCache(file);
 		let frontmatter = fileCache?.frontmatter;
+
+		// We need to convert the link format to a regular pdf path
+		let pdfPath = frontmatter?.pdf ?? "";
+		pdfPath = pdfPath.match(/\[\[(.*?)\]\]/)[1];
+
 		return {
 			title: frontmatter?.title ?? file.basename,
 			authors: frontmatter?.authors.split(",") ?? [],
@@ -35,7 +40,7 @@ export class ObsidianScholar {
 			venue: frontmatter?.venue ?? "",
 			publicationDate: frontmatter?.year ?? "",
 			tags: frontmatter?.tags ?? [],
-			pdfPath: frontmatter?.pdf ?? "",
+			pdfPath: pdfPath,
 			citekey: frontmatter?.citekey ?? "",
 		};
 	}
