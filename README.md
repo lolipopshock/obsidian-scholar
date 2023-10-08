@@ -4,10 +4,48 @@
 
 ### A typical pipeline 
 
-| Description                                                                                                                                                                                                                     | Demo |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---- |
-| **Ingest** <br/> Upon seeing a paper on the web (Slack, Twitter, etc.), you can add the paper to your local library: running this tool can download the paper PDF, and create the corresponding paper note with paper metadata. | ![01-add-paper.gif](.github/demo/01-add-paper.gif) | 
+| Description                                                                                                                                                                                                                     | Demo                                               |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| **Add Paper** <br/> Upon seeing a paper on the web (Slack, Twitter, etc.), you can add the paper to your local library: running this tool can download the paper PDF, and create the corresponding paper note with paper metadata. | ![01-add-paper.gif](.github/demo/01-add-paper.gif) |
+| **Search and Retrieval** <br/> You can quickly search and retrieve the papers in your library, as well as optionally search and add papers from SemanticScholar directly (use shift ↵ to search on SemanticScholar). | ![02-search-paper.gif](.github/demo/02-search-paper.gif) |
 
+<!-- | **Reading and Note-taking** <br/> Read the paper in place, as well as taking notes.                                                                                                                                             |
+| **Synthesize and Research** <br/> Easy reference to the papers in your library, ...                                                                                                                                             | -->
+
+### Basic Functionality 
+
+| Function           | Description                                                                              | Status |
+| ------------------ | ---------------------------------------------------------------------------------------- | ------ |
+| Paper Download     | Instantly download the paper PDF and add paper note to the library given paper URL/title |
+| Quick Paper Search | Quick search of papers and metadata                                                      |
+| Fetch Citations    | Search for papers that cite the current paper                                            |
+
+### Retrieval and Filtering 
+
+| Scenario                 | Description                                                                                                              | Status |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------ | ------ |
+| arXiv Feed               | Browse daily arXiv papers, filtered by the interest, specified by either a json or based on your previous paper interest |
+| Proceeding Browsing Mode | Browse papers in a proceeding (venue), filtered by keywords indicated by interest.                                       |
+| Literature Review Mode   | Given a set of constraints (keywords, venue, search query), find and filter a list of papers.                            |
+
+<!-- ### LLM based Summarization and Retrieval  -->
+
+<!-- - Instantly download the paper PDF and add paper note to the library given paper URL/title. 
+    - The paper URL can be either the arXiv/ACL/SemanticScholar link.
+    - [Optional] Or alternatively you can feed in the paper title
+    - Configurable paper note template.
+
+- Paper feed
+    - Browse daily arXiv papers
+
+- Quick search for papers in the library
+- [Optional] Quick search for papers on semantic scholar 
+- [Optional] Annotation and highlights 
+-  -->
+
+### Use with other tools
+
+#### Paper querying with `dataview` 
 
 ## Motivation and Acknowledgement 
 
