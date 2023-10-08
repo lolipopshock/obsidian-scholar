@@ -7,6 +7,7 @@ export const ARXIV_URL_SUFFIX_ON_S2 = "arXiv:";
 export const ACL_ANTHOLOGY_URL_SUFFIX_ON_S2 = "ACL:";
 export const SEMANTIC_SCHOLAR_FIELDS = "fields=authors,title,abstract,url,venue,year,publicationDate,externalIds,isOpenAccess,openAccessPdf,citationStyles";
 export const SEMANTIC_SCHOLAR_API = "https://api.semanticscholar.org/graph/v1/paper/";
+export const SEMANTIC_SCHOLAR_SEARCH_API = "https://api.semanticscholar.org/graph/v1/paper/search/?query=";
 
 // Commands and Messages 
 export const COMMAND_PAPER_NOTE_ID = "create-paper-note-from-url";
@@ -18,6 +19,10 @@ export const COMMAND_PAPER_MODAL_PLACEHOLDERS = [
     "https://www.semanticscholar.org/paper/some-text/xxxx"
 ]
 export const COMMAND_PAPER_MODAL_DESC = "Right now we support paper URLs from arXiv, Semantic Scholar, and ACL Anthology.";
+
+export const COMMAND_SEARCH_PAPER = "search-paper";
+export const COMMAND_SEARCH_PAPER_NAME = "Search Paper";
+
 
 // Settings 
 export const SETTING_HEADER = "ObScholar Settings";

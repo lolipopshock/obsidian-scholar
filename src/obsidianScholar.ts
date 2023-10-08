@@ -19,9 +19,34 @@ export class ObsidianScholar {
 		this.pathSep = pathSep;
 	}
 
-    constructFileName(paperData: StructuredPaperData): string {
+	constructFileName(paperData: StructuredPaperData): string {
 		// TODO: Allow configuring this
 		return paperData.title.replace(/[^a-zA-Z0-9 ]/g, "");
+	}
+
+	getPaperDataFromLocalFile(file: TFile): StructuredPaperData {
+		let fileCache = this.app.metadataCache.getFileCache(file);
+		let frontmatter = fileCache?.frontmatter;
+		return {
+			title: frontmatter?.title ?? file.basename,
+			authors: frontmatter?.authors.split(",") ?? [],
+			abstract: frontmatter?.abstract ?? "",
+			url: frontmatter?.url ?? "",
+			venue: frontmatter?.venue ?? "",
+			publicationDate: frontmatter?.year ?? "",
+			tags: frontmatter?.tags ?? [],
+			pdfPath: frontmatter?.pdf ?? "",
+			citekey: frontmatter?.citekey ?? "",
+		};
+	}
+
+	async getAllLocalPaperData(): Promise<StructuredPaperData[]> {
+		return this.app.vault
+			.getMarkdownFiles()
+			.filter((file) => file.path.startsWith(this.settings.NoteLocation))
+			.map((file) => {
+				return this.getPaperDataFromLocalFile(file);
+			});
 	}
 
 	// prettier-ignore
@@ -44,12 +69,12 @@ export class ObsidianScholar {
 		template = template.replace(/{{time:(.*?)}}/g, (_, format) => getDate({ format }));
 
 		// Replace for paper metadata
-		template = template.replace(/{{title}}/g, paperData.title);
-		template = template.replace(/{{authors}}/g, paperData.authors.join(", "));
-		template = template.replace(/{{abstract}}/g, paperData.abstract);
-		template = template.replace(/{{url}}/g, paperData.url ?? "");
-		template = template.replace(/{{venue}}/g, paperData.venue ?? "");
-		template = template.replace(/{{publicationDate}}/g, paperData.publicationDate ?? "");
+		template = template.replace(/{{title}}/g, paperData.title.replace("\n", " "));
+		template = template.replace(/{{authors}}/g, paperData.authors.join(", ").replace("\n", " "));
+		template = template.replace(/{{abstract}}/g, paperData.abstract.replace("\n", " "));
+		template = template.replace(/{{url}}/g, paperData.url ? paperData.url.replace("\n", " ") : "");
+		template = template.replace(/{{venue}}/g, paperData.venue ? paperData.venue.replace("\n", " ") : "");
+		template = template.replace(/{{publicationDate}}/g, paperData.publicationDate ? paperData.publicationDate.replace("\n", " ") : "");
 		template = template.replace(/{{tags}}/g, (paperData?.tags && paperData.tags.join(", ")) ?? "");
 
 		// Replace for pdf file
