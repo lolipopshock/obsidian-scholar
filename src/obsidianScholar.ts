@@ -64,6 +64,9 @@ export class ObsidianScholar {
 			});
 	}
 
+	cleanStringForFrontmatter(str: string): string {
+		return str.replace("\n", " ").replace(/\\[^bfnrtv0'"\\]/g, '').replace(/"/g, '\\"');
+	}
 	// prettier-ignore
 	async createFileWithTemplate(
 		paperData: StructuredPaperData,
@@ -84,13 +87,13 @@ export class ObsidianScholar {
 		template = template.replace(/{{time:(.*?)}}/g, (_, format) => getDate({ format }));
 
 		// Replace for paper metadata
-		template = template.replace(/{{title}}/g, paperData.title.replace("\n", " "));
-		template = template.replace(/{{authors}}/g, paperData.authors.join(", ").replace("\n", " "));
-		template = template.replace(/{{abstract}}/g, paperData.abstract.replace("\n", " "));
-		template = template.replace(/{{url}}/g, paperData.url ? paperData.url.replace("\n", " ") : "");
-		template = template.replace(/{{venue}}/g, paperData.venue ? paperData.venue.replace("\n", " ") : "");
-		template = template.replace(/{{publicationDate}}/g, paperData.publicationDate ? paperData.publicationDate.replace("\n", " ") : "");
-		template = template.replace(/{{tags}}/g, (paperData?.tags && paperData.tags.join(", ")) ?? "");
+		template = template.replace(/{{title}}/g, this.cleanStringForFrontmatter(paperData.title));
+		template = template.replace(/{{authors}}/g, this.cleanStringForFrontmatter(paperData.authors.join(", ")));
+		template = template.replace(/{{abstract}}/g, this.cleanStringForFrontmatter(paperData.abstract));
+		template = template.replace(/{{url}}/g, paperData.url ? this.cleanStringForFrontmatter(paperData.url) : "");
+		template = template.replace(/{{venue}}/g, paperData.venue ? this.cleanStringForFrontmatter(paperData.venue) : "");
+		template = template.replace(/{{publicationDate}}/g, paperData.publicationDate ? this.cleanStringForFrontmatter(paperData.publicationDate): "");
+		template = template.replace(/{{tags}}/g, (paperData?.tags && this.cleanStringForFrontmatter(paperData.tags.join(", "))) ?? "");
 
 		// Replace for pdf file
 		template = template.replace(/{{pdf}}/g, paperData.pdfPath ? `[[${paperData.pdfPath}]]` : "");
