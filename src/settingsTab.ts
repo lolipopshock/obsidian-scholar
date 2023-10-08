@@ -1,10 +1,4 @@
-import {
-	App,
-	TFolder,
-	Notice,
-	PluginSettingTab,
-	Setting,
-} from "obsidian";
+import { App, TFolder, Notice, PluginSettingTab, Setting } from "obsidian";
 
 import {
 	SETTING_HEADER,
@@ -16,6 +10,9 @@ import {
 	SETTING_PDF_DOWNLOAD_NAME,
 	SETTING_PDF_DOWNLOAD_DESC,
 	SETTING_PDF_DOWNLOAD_FOLDER_DEFAULT,
+	SETTING_IS_OPEN_PDF_WITH_NOTE_NAME,
+	SETTING_IS_ADD_TO_BIB_FILE_NAME,
+	SETTING_IS_ADD_TO_BIB_FILE_DESC,
 	SETTING_ADD_TO_BIB_FILE_NAME,
 	SETTING_ADD_TO_BIB_FILE_DESC,
 	NOTICE_NOT_BIB_FILE,
@@ -44,7 +41,6 @@ export const DEFAULT_SETTINGS: ObsidianScholarPluginSettings = {
 	saveBibTex: false,
 	bibTexFileLocation: "",
 };
-
 
 // Settings Tab
 export class ObsidianScholarSettingTab extends PluginSettingTab {
@@ -139,7 +135,7 @@ export class ObsidianScholarSettingTab extends PluginSettingTab {
 			);
 
 		new Setting(containerEl)
-			.setName("Open PDF after download?")
+			.setName(SETTING_IS_OPEN_PDF_WITH_NOTE_NAME)
 			.addToggle((toggle) =>
 				toggle
 					.setValue(this.plugin.settings.openPdfAfterDownload)
@@ -150,50 +146,54 @@ export class ObsidianScholarSettingTab extends PluginSettingTab {
 					})
 			);
 
-		new Setting(containerEl).setName("Save BibTex?").addToggle((toggle) =>
-			toggle
-				.setValue(this.plugin.settings.saveBibTex)
-				.onChange(async (saveBibTex) => {
-					if (saveBibTex) {
-						// Show command and another setting
-						new Setting(containerEl)
-							.setName(SETTING_ADD_TO_BIB_FILE_NAME)
-							.setDesc(SETTING_ADD_TO_BIB_FILE_DESC)
-							.addDropdown((dropdown) =>
-								dropdown
-									.addOptions(bibTexSaveOption)
-									.setValue(
-										this.plugin.settings.bibTexFileLocation
-									)
-									.onChange(async (value) => {
-										// make sure the file is a .bib file
-										if (!value.endsWith(".bib")) {
-											new Notice(NOTICE_NOT_BIB_FILE);
-										}
-										if (
-											value === "" ||
-											value === undefined ||
-											value === null
-										) {
-											new Notice(
-												NOTICE_NO_BIB_FILE_SELECTED
-											);
-											return;
-										}
-										this.plugin.settings.bibTexFileLocation =
-											value;
-										this.plugin.settings.saveBibTex =
-											saveBibTex;
-										await this.plugin.saveSettings();
-									})
-							);
-					} else {
-						// Hide command and another setting
-						this.plugin.settings.saveBibTex = saveBibTex;
-						containerEl.removeChild(containerEl.lastChild!);
-					}
-				})
-		);
+		new Setting(containerEl)
+			.setName(SETTING_IS_ADD_TO_BIB_FILE_NAME)
+			.setDesc(SETTING_IS_ADD_TO_BIB_FILE_DESC)
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.plugin.settings.saveBibTex)
+					.onChange(async (saveBibTex) => {
+						if (saveBibTex) {
+							// Show command and another setting
+							new Setting(containerEl)
+								.setName(SETTING_ADD_TO_BIB_FILE_NAME)
+								.setDesc(SETTING_ADD_TO_BIB_FILE_DESC)
+								.addDropdown((dropdown) =>
+									dropdown
+										.addOptions(bibTexSaveOption)
+										.setValue(
+											this.plugin.settings
+												.bibTexFileLocation
+										)
+										.onChange(async (value) => {
+											// make sure the file is a .bib file
+											if (!value.endsWith(".bib")) {
+												new Notice(NOTICE_NOT_BIB_FILE);
+											}
+											if (
+												value === "" ||
+												value === undefined ||
+												value === null
+											) {
+												new Notice(
+													NOTICE_NO_BIB_FILE_SELECTED
+												);
+												return;
+											}
+											this.plugin.settings.bibTexFileLocation =
+												value;
+											this.plugin.settings.saveBibTex =
+												saveBibTex;
+											await this.plugin.saveSettings();
+										})
+								);
+						} else {
+							// Hide command and another setting
+							this.plugin.settings.saveBibTex = saveBibTex;
+							containerEl.removeChild(containerEl.lastChild!);
+						}
+					})
+			);
 
 		if (this.plugin.settings.saveBibTex) {
 			new Setting(containerEl)

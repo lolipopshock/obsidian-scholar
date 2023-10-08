@@ -1,14 +1,4 @@
-import {
-	App,
-	TFile,
-	TFolder,
-	Editor,
-	MarkdownView,
-	SuggestModal,
-	Modal,
-	Notice,
-	Plugin,
-} from "obsidian";
+import { App, SuggestModal, Modal, Notice, Plugin } from "obsidian";
 import {
 	StructuredPaperData,
 	fetchArxivPaperDataFromUrl,
@@ -25,11 +15,13 @@ import {
 	COMMAND_PAPER_MODAL_PLACEHOLDERS,
 	NOTICE_RETRIEVING_ARXIV,
 	NOTICE_RETRIEVING_S2,
-	NOTE_TEMPLATE_DEFAULT,
-	FILE_ALREADY_EXISTS,
+	COMMAND_COPY_PAPER_BIBTEX,
+	COMMAND_COPY_PAPER_BIBTEX_NAME,
+	NOTICE_SEARCH_BIBTEX_NOT_FOUND,
+	NOTICE_SEARCH_BIBTEX_ERROR,
 	NOTICE_PAPER_NOTE_DOWNLOAD_ERROR,
 } from "./constants";
-import { getDate, trimString, isValidUrl } from "./utility";
+import { isValidUrl } from "./utility";
 import {
 	ObsidianScholarSettingTab,
 	ObsidianScholarPluginSettings,
@@ -77,6 +69,44 @@ export default class ObsidianScholarPlugin extends Plugin {
 			},
 		});
 
+		this.addCommand({
+			id: COMMAND_COPY_PAPER_BIBTEX,
+			name: COMMAND_COPY_PAPER_BIBTEX_NAME,
+			checkCallback: (checking: boolean) => {
+				const currentFile = this.app.workspace.getActiveFile();
+
+				if (
+					!this.settings.saveBibTex ||
+					!currentFile ||
+					currentFile.extension !== "md" ||
+					!this.obsidianScholar.isFileInNoteLocation(currentFile)
+				) {
+					// console.log("not valid path");
+					return false;
+				} else {
+					if (!checking) {
+						// this.obsidianScholar.copyPaperBibtex(currentFile);
+						console.log("copying bibtex");
+						this.obsidianScholar
+							.getPaperBibtex(currentFile)
+							.then((bibtex) => {
+								// console.log("got bibtex");
+								if (!bibtex) {
+									new Notice(NOTICE_SEARCH_BIBTEX_NOT_FOUND);
+									return false;
+								}
+								navigator.clipboard.writeText(bibtex);
+							})
+							.catch((err) => {
+								console.log(err);
+								new Notice(NOTICE_SEARCH_BIBTEX_ERROR);
+							});
+					}
+					return true;
+				}
+			},
+		});
+
 		this.addSettingTab(new ObsidianScholarSettingTab(this.app, this));
 
 		// We want to be able to view bibtex files in obsidian
@@ -108,6 +138,7 @@ interface PaperSearchModelResult {
 	s2Url?: string;
 	isFirstS2Result?: boolean;
 }
+
 // The Paper Search Modal
 class paperSearchModal extends SuggestModal<PaperSearchModelResult> {
 	private settings: ObsidianScholarPluginSettings;

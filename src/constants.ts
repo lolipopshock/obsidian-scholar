@@ -23,6 +23,9 @@ export const COMMAND_PAPER_MODAL_DESC = "Right now we support paper URLs from ar
 export const COMMAND_SEARCH_PAPER = "search-paper";
 export const COMMAND_SEARCH_PAPER_NAME = "Search Paper";
 
+export const COMMAND_COPY_PAPER_BIBTEX = "copy-paper-bibtex";
+export const COMMAND_COPY_PAPER_BIBTEX_NAME = "Copy Paper BibTeX";
+
 
 // Settings 
 export const SETTING_HEADER = "ObScholar Settings";
@@ -42,6 +45,12 @@ export const SETTING_PDF_DOWNLOAD_NAME = "PDF folder";
 export const SETTING_PDF_DOWNLOAD_DESC = "Choose the path to download the PDF to.";
 export const SETTING_PDF_DOWNLOAD_FOLDER_DEFAULT = "(root of the vault)";
 
+export const SETTING_IS_OPEN_PDF_WITH_NOTE_NAME = "Open PDF with note?";
+export const SETTING_IS_OPEN_PDF_WITH_NOTE_DESC = "Whether to open the PDF after paper download or search.";
+
+export const SETTING_IS_ADD_TO_BIB_FILE_NAME = "Save paper BibTex to a .bib file?";
+export const SETTING_IS_ADD_TO_BIB_FILE_DESC = "If disabled, you cannot execute the \"Copy Paper BibTeX\" command.";
+
 export const SETTING_ADD_TO_BIB_FILE_NAME = "Save the BibTeX to";
 export const SETTING_ADD_TO_BIB_FILE_DESC = "Choose the .bib file to save the BibTeX to.";
 export const SETTING_ADD_TO_BIB_FILE_TARGET = "";
@@ -54,6 +63,8 @@ export const NOTICE_NO_BIB_FILE_SELECTED = "No .bib file is selected. Please cre
 export const NOTICE_PAPER_NOTE_DOWNLOAD_ERROR = "Something went wrong. Check the Obsidian console if the error persists.";
 export const UNSUPPORTED_URL = "This URL is not supported. You tried to enter: ";
 export const FILE_ALREADY_EXISTS = "Unable to create note. File already exists. Opening existing file.";
+export const NOTICE_SEARCH_BIBTEX_NOT_FOUND = "The BibTeX for this paper is not found. You might search the bibtext file manually.";
+export const NOTICE_SEARCH_BIBTEX_ERROR = "The BibTeX for this paper is not found. You might search the bibtext file manually.";
 
 // TEMPLATE
 export const NOTE_TEMPLATE_DEFAULT = `---
