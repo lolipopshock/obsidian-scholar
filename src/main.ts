@@ -304,6 +304,10 @@ class paperSearchModal extends SuggestModal<PaperSearchModelResult> {
 	onNoSuggestion() {
 		this.resultContainerEl.empty();
 	}
+
+	onClose(): void {
+		document.removeEventListener("keydown", this.keyListener);
+	}
 }
 
 // The Paper Download Modal
