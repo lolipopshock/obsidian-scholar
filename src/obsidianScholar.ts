@@ -158,25 +158,26 @@ export class ObsidianScholar {
 			});
 	}
 
-    async downloadAndSavePaperNotePDF(paperData: StructuredPaperData) {
-        let paperFilename = this.constructFileName(paperData);
+	async downloadAndSavePaperNotePDF(paperData: StructuredPaperData) {
+		let paperFilename = this.constructFileName(paperData);
 
-        // console.log("Downloading pdf...")
-        paperData.pdfPath = await this.downloadPdf(
-            paperData.pdfUrl,
-            paperFilename
-        );
+		if (!paperData.pdfUrl) {
+			new Notice("No pdf url found. You might need to find the PDF manually.");
+		} else {
+			console.log("Downloading pdf...");
+			paperData.pdfPath = await this.downloadPdf(
+				paperData.pdfUrl,
+				paperFilename
+			);
+		}
 
-        let pathToFile =
-            this.settings.NoteLocation +
-            this.pathSep +
-            paperFilename +
-            ".md";
+		let pathToFile =
+			this.settings.NoteLocation + this.pathSep + paperFilename + ".md";
 
-        // console.log("Creating note...")
-        await this.createFileFromPaperData(paperData, pathToFile);
+		console.log("Creating note...");
+		await this.createFileFromPaperData(paperData, pathToFile);
 
-        // console.log("Saving bibtex...")
-        paperData?.bibtex && (await this.saveBibTex(paperData.bibtex));
-    }
+		console.log("Saving bibtex...");
+		paperData?.bibtex && (await this.saveBibTex(paperData.bibtex));
+	}
 }
