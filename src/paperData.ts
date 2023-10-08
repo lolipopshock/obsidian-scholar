@@ -99,8 +99,8 @@ function parseS2paperData(json: any) {
 
 	let paperUrl = json.url;
 	let pdfUrl = "";
-	if (json["isOpenAccess"] && json["isOpenAccess"] === true) {
-		pdfUrl = json["openAccessPdf"]["url"];
+	if (json["isOpenAccess"] && json["isOpenAccess"] === true && json["openAccessPdf"]) {
+		pdfUrl = json["openAccessPdf"]?.url;
 	}
 	if (json["externalIds"] && json["externalIds"]["ArXiv"]) {
 		paperUrl = "https://arxiv.org/abs/" + json.externalIds["ArXiv"];
