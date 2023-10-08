@@ -1,5 +1,6 @@
 # local dev 
-dev-obsidian-folder/
+build/
+dev-obsidian-scholar/
 *.mov
 
 # Obsidian 
