@@ -1,0 +1,7 @@
+.add-paper__title {
+    font-weight: 600;
+}
+
+.add-paper__description {
+    color: var(--text-faint);
+}
