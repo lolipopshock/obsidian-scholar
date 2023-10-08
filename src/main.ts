@@ -50,6 +50,7 @@ interface ObScholarPluginSettings {
 	fileNaming: string;
 	templateFileLocation: string;
 	pdfDownloadLocation: string;
+	openPdfAfterDownload: boolean;
 	saveBibTex: boolean;
 	bibTexFileLocation: string;
 }
@@ -59,6 +60,7 @@ const DEFAULT_SETTINGS: ObScholarPluginSettings = {
 	fileNaming: "",
 	templateFileLocation: "",
 	pdfDownloadLocation: "",
+	openPdfAfterDownload: false,
 	saveBibTex: false,
 	bibTexFileLocation: "",
 };
@@ -232,6 +234,10 @@ class createNoteFromUrlModal extends Modal {
 			await this.app.vault.create(pathToFile, template).then(() => {
 				this.app.workspace.openLinkText(pathToFile, pathToFile);
 			});
+		}
+		if (this.settings.openPdfAfterDownload) {
+			let leaf = this.app.workspace.getLeaf('split', 'vertical');
+			paperData.pdfPath && leaf.openFile(this.app.vault.getAbstractFileByPath(paperData.pdfPath) as TFile);
 		}
 	}
 
@@ -434,6 +440,17 @@ class ObScholarSettingTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.pdfDownloadLocation)
 					.onChange(async (value) => {
 						this.plugin.settings.pdfDownloadLocation = value;
+						await this.plugin.saveSettings();
+					})
+			);
+
+		new Setting(containerEl)
+			.setName("Open PDF after download?")
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.plugin.settings.openPdfAfterDownload)
+					.onChange(async (openPdfAfterDownload) => {
+						this.plugin.settings.openPdfAfterDownload = openPdfAfterDownload;
 						await this.plugin.saveSettings();
 					})
 			);
