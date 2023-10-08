@@ -20,7 +20,7 @@ export interface StructuredPaperData {
 	bibtex?: string;
 	pdfPath?: string;
 	pdfUrl?: string | null;
-    citekey?: string | null;
+	citekey?: string | null;
 }
 
 function getIdentifierFromUrl(url: string): string {
@@ -78,7 +78,7 @@ export async function fetchArxivPaperDataFromUrl(
 		abstract: trimString(abstract),
 		pdfUrl: pdfUrl,
 		bibtex: bibtex,
-        citekey: getCiteKeyFromBibtex(bibtex),
+		citekey: getCiteKeyFromBibtex(bibtex),
 	};
 }
 
@@ -86,7 +86,7 @@ function parseS2paperData(json: any) {
 	let title = json.title;
 	let abstract = json.abstract;
 
-	let authors = json.authors;
+	let authors = json.authors.map((author: any) => author.name);
 
 	let venue = "";
 	if (json.venue != null && json.venue != "")
@@ -111,7 +111,7 @@ function parseS2paperData(json: any) {
 		pdfUrl = json["openAccessPdf"]["url"];
 	}
 	let bibtex = json["citationStyles"]?.bibtex
-		? json["citationStyles"]["bibxtext"]
+		? json["citationStyles"]["bibtex"]
 		: "";
 
 	return {
@@ -123,7 +123,7 @@ function parseS2paperData(json: any) {
 		abstract: trimString(abstract),
 		pdfUrl: pdfUrl,
 		bibtex: bibtex,
-        citekey: getCiteKeyFromBibtex(bibtex),
+		citekey: getCiteKeyFromBibtex(bibtex),
 	};
 }
 
