@@ -178,9 +178,9 @@ class createNoteFromUrlModal extends Modal {
 		contentEl.empty();
 	}
 
-	constructFileName(paperData: any): string {
+	constructFileName(paperData: StructuredPaperData): string {
 		// TODO: Allow configuring this
-		return paperData.title;
+		return paperData.title.replace(/[^a-zA-Z0-9 ]/g, "");
 	}
 
 	async createFileWithTemplate(
@@ -321,7 +321,7 @@ class createNoteFromUrlModal extends Modal {
 			paperFetchFunction = fetchSemanticScholarPaperDataFromUrl;
 		}
 		paperFetchFunction(url).then(async (paperData: StructuredPaperData) => {
-			let paperFilename = paperData.title;
+			let paperFilename = this.constructFileName(paperData);
 
 			// console.log("Downloading pdf...")
 			paperData.pdfPath = await this.downloadPdf(
