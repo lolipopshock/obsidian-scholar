@@ -133,6 +133,7 @@ class paperSearchModal extends SuggestModal<PaperSearchModelResult> {
 			["↑↓", "to navigate"],
 			["↵", "to open"],
 			["shift ↵", "to search semanticscholar"],
+			["⇥ (tab)", "to expand search result"],
 			["esc", "to dismiss"],
 		];
 
@@ -284,7 +285,10 @@ class paperSearchModal extends SuggestModal<PaperSearchModelResult> {
 		if (searchResult.resultType === "local") {
 			const localFilePath = searchResult.localFilePath;
 			if (localFilePath) {
-				this.app.workspace.openLinkText(localFilePath, localFilePath);
+				this.obsidianScholar.openPaper(
+					localFilePath,
+					searchResult.paper
+				);
 			} else {
 				new Notice("Local file path not found");
 			}
