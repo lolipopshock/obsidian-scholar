@@ -96,20 +96,24 @@ function parseS2paperData(json: any) {
 
 	if (title == null) title = "undefined";
 
-	let semanticScholarURL = json.url;
-	if (json["externalIds"] && json["externalIds"]["ArXiv"]) {
-		semanticScholarURL +=
-			"\n" + "https://arxiv.org/abs/" + json.externalIds["ArXiv"];
-	}
-	if (json["externalIds"] && json["externalIds"]["ACL]"]) {
-		semanticScholarURL +=
-			"\n" + "https://aclanthology.org/" + json.externalIds["ACL"];
-	}
-
+	let paperUrl = json.url;
 	let pdfUrl = "";
 	if (json["isOpenAccess"] && json["isOpenAccess"] === true) {
 		pdfUrl = json["openAccessPdf"]["url"];
 	}
+	if (json["externalIds"] && json["externalIds"]["ArXiv"]) {
+		paperUrl = "https://arxiv.org/abs/" + json.externalIds["ArXiv"];
+		pdfUrl = "https://arxiv.org/pdf/" + json.externalIds["ArXiv"];
+	}
+	if (json["externalIds"] && json["externalIds"]["ACL]"]) {
+		paperUrl = "https://aclanthology.org/" + json.externalIds["ACL"];
+		let pdfUrl = paperUrl;
+		if (pdfUrl.endsWith("/")) {
+			pdfUrl = paperUrl.slice(0, -1);
+		}
+		pdfUrl = pdfUrl + ".pdf";
+	}
+
 	let bibtex = json["citationStyles"]?.bibtex
 		? json["citationStyles"]["bibtex"]
 		: "";
@@ -118,7 +122,7 @@ function parseS2paperData(json: any) {
 		title: trimString(title),
 		authors: authors,
 		venue: trimString(venue),
-		url: semanticScholarURL,
+		url: paperUrl,
 		publicationDate: trimString(publicationDate),
 		abstract: trimString(abstract),
 		pdfUrl: pdfUrl,
