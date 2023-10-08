@@ -388,9 +388,12 @@ class ObScholarSettingTab extends PluginSettingTab {
 		});
 		pdfDownloadFolderOptions[""] = SETTING_PDF_DOWNLOAD_FOLDER_DEFAULT;
 
+		let allFiles = this.app.vault
+			.getAllLoadedFiles()
+			.map((f) => f.path);
 		let bibTexSaveOption: Record<string, string> = {};
 
-		files.forEach((record) => {
+		allFiles.forEach((record) => {
 			bibTexSaveOption[record] = record;
 		});
 		bibTexSaveOption[""] = "";
