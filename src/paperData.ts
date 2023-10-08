@@ -5,6 +5,7 @@ import {
 	ACL_ANTHOLOGY_URL_SUFFIX_ON_S2,
 	SEMANTIC_SCHOLAR_FIELDS,
 	SEMANTIC_SCHOLAR_API,
+	SEMANTIC_SCHOLAR_SEARCH_API,
 } from "./constants";
 import { request } from "obsidian";
 import { trimString } from "./utility";
@@ -159,4 +160,28 @@ export async function fetchSemanticScholarPaperDataFromUrl(
 		throw new Error(json.error);
 	}
 	return parseS2paperData(json);
+}
+
+export async function searchSemanticScholar(
+	query: string
+): Promise<StructuredPaperData[]> {
+	let requestUrl =
+		SEMANTIC_SCHOLAR_SEARCH_API + encodeURIComponent(query) + "&" + SEMANTIC_SCHOLAR_FIELDS;
+
+	console.log(requestUrl);
+
+	let s2Data = await request(requestUrl);
+	console.log(s2Data);
+
+	let json = JSON.parse(s2Data);
+
+	if (json.error != null) {
+		throw new Error(json.error);
+	}
+
+	if (json.data == null || json.data.length == 0 || json?.total == 0) {
+		throw new Error("No data returned");
+	}
+
+	return json.data.map((paper: any) => parseS2paperData(paper));
 }
