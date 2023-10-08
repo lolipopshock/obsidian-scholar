@@ -1,7 +1,7 @@
 {
-    "name": "ob-scholar",
+    "name": "obsidian-scholar",
     "version": "1.0.0",
-    "description": "",
+    "description": "Streamline Research Workflow in Obsidian",
     "main": "main.js",
     "scripts": {
         "dev": "node esbuild.config.mjs",

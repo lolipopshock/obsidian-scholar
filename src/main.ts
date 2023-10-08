@@ -45,7 +45,7 @@ import * as path from "path";
 import { getDate, trimString, isValidUrl } from "./utility";
 
 // Settings
-interface ObScholarPluginSettings {
+interface ObsidianScholarPluginSettings {
 	NoteLocation: string;
 	fileNaming: string;
 	templateFileLocation: string;
@@ -55,7 +55,7 @@ interface ObScholarPluginSettings {
 	bibTexFileLocation: string;
 }
 
-const DEFAULT_SETTINGS: ObScholarPluginSettings = {
+const DEFAULT_SETTINGS: ObsidianScholarPluginSettings = {
 	NoteLocation: "",
 	fileNaming: "",
 	templateFileLocation: "",
@@ -66,11 +66,11 @@ const DEFAULT_SETTINGS: ObScholarPluginSettings = {
 };
 
 // Main Plugin Entry Point
-export default class ObScholarPlugin extends Plugin {
-	settings: ObScholarPluginSettings;
+export default class ObsidianScholarPlugin extends Plugin {
+	settings: ObsidianScholarPluginSettings;
 
 	async onload() {
-		console.log("Loading ObScholar Plugin.");
+		console.log("Loading ObsidianScholar Plugin.");
 		await this.loadSettings();
 
 		this.addCommand({
@@ -81,7 +81,7 @@ export default class ObScholarPlugin extends Plugin {
 			},
 		});
 
-		this.addSettingTab(new ObScholarSettingTab(this.app, this));
+		this.addSettingTab(new ObsidianScholarSettingTab(this.app, this));
 
 		// We want to be able to view bibtex files in obsidian
 		this.registerExtensions(["bib"], "markdown");
@@ -105,9 +105,9 @@ export default class ObScholarPlugin extends Plugin {
 
 // The Paper Download Modal
 class createNoteFromUrlModal extends Modal {
-	settings: ObScholarPluginSettings;
+	settings: ObsidianScholarPluginSettings;
 
-	constructor(app: App, settings: ObScholarPluginSettings) {
+	constructor(app: App, settings: ObsidianScholarPluginSettings) {
 		super(app);
 		this.settings = settings;
 	}
@@ -351,10 +351,10 @@ class createNoteFromUrlModal extends Modal {
 }
 
 // Settings Tab
-class ObScholarSettingTab extends PluginSettingTab {
-	plugin: ObScholarPlugin;
+class ObsidianScholarSettingTab extends PluginSettingTab {
+	plugin: ObsidianScholarPlugin;
 
-	constructor(app: App, plugin: ObScholarPlugin) {
+	constructor(app: App, plugin: ObsidianScholarPlugin) {
 		super(app, plugin);
 		this.plugin = plugin;
 	}

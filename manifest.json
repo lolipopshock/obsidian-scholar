@@ -1,9 +1,9 @@
 {
-	"id": "ob-scholar",
+	"id": "obsidian-scholar",
 	"name": "Obsidian Scholar",
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
-	"description": "",
+	"description": "Streamline Research Workflow in Obsidian",
 	"author": "Shannon Shen",
 	"authorUrl": "https://www.szj.io",
 	"isDesktopOnly": false
