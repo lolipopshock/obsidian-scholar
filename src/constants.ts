@@ -59,11 +59,8 @@ tags:
 url: "{{url}}"
 pdf: "{{pdf}}"
 citekey: "{{citekey}}"
+abstract: "{{abstract}}"
 ---
 
-#### Abstract 
-{{abstract}}
-
-#### Notes
 `;
 /* eslint-enable */
