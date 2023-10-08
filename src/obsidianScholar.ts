@@ -189,7 +189,7 @@ export class ObsidianScholar {
 		if (!paperData.pdfUrl) {
 			new Notice("No pdf url found. You might need to find the PDF manually.");
 		} else {
-			console.log("Downloading pdf...");
+			// console.log("Downloading pdf...");
 			paperData.pdfPath = await this.downloadPdf(
 				paperData.pdfUrl,
 				paperFilename
@@ -199,10 +199,10 @@ export class ObsidianScholar {
 		let pathToFile =
 			this.settings.NoteLocation + this.pathSep + paperFilename + ".md";
 
-		console.log("Creating note...");
+		// console.log("Creating note...");
 		await this.createFileFromPaperData(paperData, pathToFile);
 
-		console.log("Saving bibtex...");
+		// console.log("Saving bibtex...");
 		paperData?.bibtex && (await this.saveBibTex(paperData.bibtex));
 	}
 }

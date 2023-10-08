@@ -44,7 +44,7 @@ export default class ObsidianScholarPlugin extends Plugin {
 	obsidianScholar: ObsidianScholar;
 
 	async onload() {
-		console.log("Loading ObsidianScholar Plugin.");
+		// console.log("Loading ObsidianScholar Plugin.");
 		await this.loadSettings();
 
 		this.obsidianScholar = new ObsidianScholar(
@@ -201,7 +201,7 @@ class paperSearchModal extends SuggestModal<PaperSearchModelResult> {
 			if (event.repeat) return;
 
 			if (event.shiftKey && event.key === "Enter") {
-				console.log("Searching on Semantic Scholar");
+				// console.log("Searching on Semantic Scholar");
 
 				const inputEl = document.querySelector(
 					".prompt-input"
@@ -212,7 +212,7 @@ class paperSearchModal extends SuggestModal<PaperSearchModelResult> {
 			}
 
 			if (event.key === "Tab") {
-				console.log("Tab pressed");
+				// console.log("Tab pressed");
 				const abstractHTML = document.querySelector(
 					".suggestion-item.is-selected > .paper-search-result-abstract"
 				);
@@ -376,7 +376,7 @@ class createNoteFromUrlModal extends Modal {
 			if (!running) {
 				// Avoid multiple requests
 				running = true;
-				console.log("HTTP request: " + url);
+				// console.log("HTTP request: " + url);
 				this.fetchPaperDataAndCreateNoteFromUrl(url);
 			}
 		});

@@ -168,10 +168,10 @@ export async function searchSemanticScholar(
 	let requestUrl =
 		SEMANTIC_SCHOLAR_SEARCH_API + encodeURIComponent(query) + "&" + SEMANTIC_SCHOLAR_FIELDS;
 
-	console.log(requestUrl);
+	// console.log(requestUrl);
 
 	let s2Data = await request(requestUrl);
-	console.log(s2Data);
+	// console.log(s2Data);
 
 	let json = JSON.parse(s2Data);
 
