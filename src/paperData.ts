@@ -82,34 +82,7 @@ export async function fetchArxivPaperDataFromUrl(
 	};
 }
 
-export async function fetchSemanticScholarPaperDataFromUrl(
-	url: string
-): Promise<StructuredPaperData> {
-	const s2Id = getIdentifierFromUrl(url);
-	let suffix = "INVALID";
-	if (url.toLowerCase().includes("arxiv")) {
-		suffix = ARXIV_URL_SUFFIX_ON_S2;
-	} else if (url.toLowerCase().includes("aclanthology")) {
-		suffix = ACL_ANTHOLOGY_URL_SUFFIX_ON_S2;
-	} else if (url.toLowerCase().includes("semanticscholar")) {
-		suffix = "";
-	} else;
-
-	if (suffix === "INVALID") {
-		console.log("Invalid url: " + url);
-		throw new Error("Invalid url: " + url);
-	}
-
-	let s2Data = await request(
-		SEMANTIC_SCHOLAR_API + suffix + s2Id + "?" + SEMANTIC_SCHOLAR_FIELDS
-	);
-
-	let json = JSON.parse(s2Data);
-
-	if (json.error != null) {
-		throw new Error(json.error);
-	}
-
+function parseS2paperData(json: any) {
 	let title = json.title;
 	let abstract = json.abstract;
 
@@ -122,7 +95,6 @@ export async function fetchSemanticScholarPaperDataFromUrl(
 	let publicationDate = json.publicationDate;
 
 	if (title == null) title = "undefined";
-	let filename = this.extractFileNameFromUrl(url, title);
 
 	let semanticScholarURL = json.url;
 	if (json["externalIds"] && json["externalIds"]["ArXiv"]) {
@@ -153,4 +125,34 @@ export async function fetchSemanticScholarPaperDataFromUrl(
 		bibtex: bibtex,
         citekey: getCiteKeyFromBibtex(bibtex),
 	};
+}
+
+export async function fetchSemanticScholarPaperDataFromUrl(
+	url: string
+): Promise<StructuredPaperData> {
+	const s2Id = getIdentifierFromUrl(url);
+	let suffix = "INVALID";
+	if (url.toLowerCase().includes("arxiv")) {
+		suffix = ARXIV_URL_SUFFIX_ON_S2;
+	} else if (url.toLowerCase().includes("aclanthology")) {
+		suffix = ACL_ANTHOLOGY_URL_SUFFIX_ON_S2;
+	} else if (url.toLowerCase().includes("semanticscholar")) {
+		suffix = "";
+	} else;
+
+	if (suffix === "INVALID") {
+		console.log("Invalid url: " + url);
+		throw new Error("Invalid url: " + url);
+	}
+
+	let s2Data = await request(
+		SEMANTIC_SCHOLAR_API + suffix + s2Id + "?" + SEMANTIC_SCHOLAR_FIELDS
+	);
+
+	let json = JSON.parse(s2Data);
+
+	if (json.error != null) {
+		throw new Error(json.error);
+	}
+	return parseS2paperData(json);
 }
