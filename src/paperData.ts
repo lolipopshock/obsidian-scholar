@@ -53,7 +53,7 @@ export async function fetchArxivPaperDataFromUrl(
 	let authorsSource = xmlDoc.getElementsByTagName("author");
 
 	let authors: string[] = [];
-	for (let i = 0; i < authors.length; i++) {
+	for (let i = 0; i < authorsSource.length; i++) {
 		authors.push(
 			authorsSource[i].getElementsByTagName("name")[0]
 				.textContent as string
