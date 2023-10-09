@@ -8,6 +8,8 @@ export const ACL_ANTHOLOGY_URL_SUFFIX_ON_S2 = "ACL:";
 export const SEMANTIC_SCHOLAR_FIELDS = "fields=authors,title,abstract,url,venue,year,publicationDate,externalIds,isOpenAccess,openAccessPdf,citationStyles";
 export const SEMANTIC_SCHOLAR_API = "https://api.semanticscholar.org/graph/v1/paper/";
 export const SEMANTIC_SCHOLAR_SEARCH_API = "https://api.semanticscholar.org/graph/v1/paper/search/?query=";
+export const SEMANTIC_SCHOLAR_REFERENCE_SEARCH_FIELDS = "/references?fields=authors,title,abstract,url,venue,year,publicationDate,externalIds,isOpenAccess,openAccessPdf,citationStyles&limit=50"
+
 
 // Commands and Messages 
 export const COMMAND_PAPER_NOTE_ID = "create-paper-note-from-url";
@@ -25,6 +27,9 @@ export const COMMAND_SEARCH_PAPER_NAME = "Search Paper";
 
 export const COMMAND_COPY_PAPER_BIBTEX = "copy-paper-bibtex";
 export const COMMAND_COPY_PAPER_BIBTEX_NAME = "Copy Paper BibTeX";
+
+export const COMMAND_SEARCH_PAPER_REFERENCES = "search-paper-references";
+export const COMMAND_SEARCH_PAPER_REFERENCES_NAME = "Search Papers References";
 
 
 // Settings 
