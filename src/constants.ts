@@ -70,6 +70,7 @@ export const UNSUPPORTED_URL = "This URL is not supported. You tried to enter: "
 export const FILE_ALREADY_EXISTS = "Unable to create note. File already exists. Opening existing file.";
 export const NOTICE_SEARCH_BIBTEX_NOT_FOUND = "The BibTeX for this paper is not found. You might search the bibtext file manually.";
 export const NOTICE_SEARCH_BIBTEX_ERROR = "The BibTeX for this paper is not found. You might search the bibtext file manually.";
+export const NOTICE_SEARCH_BIBTEX_COPIED = "The BibTeX of this paper is copied to the clipboard.";
 
 // TEMPLATE
 export const NOTE_TEMPLATE_DEFAULT = `---

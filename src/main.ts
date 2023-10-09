@@ -22,6 +22,7 @@ import {
 	COMMAND_COPY_PAPER_BIBTEX_NAME,
 	NOTICE_SEARCH_BIBTEX_NOT_FOUND,
 	NOTICE_SEARCH_BIBTEX_ERROR,
+	NOTICE_SEARCH_BIBTEX_COPIED,
 	NOTICE_PAPER_NOTE_DOWNLOAD_ERROR,
 } from "./constants";
 import { isValidUrl } from "./utility";
@@ -98,6 +99,7 @@ export default class ObsidianScholarPlugin extends Plugin {
 									return false;
 								}
 								navigator.clipboard.writeText(bibtex);
+								new Notice(NOTICE_SEARCH_BIBTEX_COPIED);
 							})
 							.catch((err) => {
 								console.log(err);
