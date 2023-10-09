@@ -196,7 +196,7 @@ class paperSearchModal extends SuggestModal<PaperSearchModelResult> {
 	private lastSearchTime: number = 0;
 	private delayInMs: number = 250;
 	private lastSearch: string = "";
-	private lastSearchResults: StructuredPaperData[] = [];
+	private lastSearchResults: PaperSearchModelResult[] = [];
 	private localPaperData: PaperSearchModelResult[] = [];
 
 	constructor(
@@ -273,7 +273,17 @@ class paperSearchModal extends SuggestModal<PaperSearchModelResult> {
 		}
 		// After the sleep our search is still the last -- so the user stopped and we can go on
 		this.lastSearch = query;
-		this.lastSearchResults = await searchSemanticScholar(query);
+		let searchResult = await searchSemanticScholar(query);
+
+		this.lastSearchResults = searchResult.map((paper, index) => {
+			return {
+				paper: paper,
+				paperIndex: index + this.localPaperData.length,
+				resultType: "semanticscholar",
+				s2Url: paper.url,
+				isFirstS2Result: index === 0,
+			};
+		});
 		(this as any).updateSuggestions();
 	}
 
@@ -327,17 +337,7 @@ class paperSearchModal extends SuggestModal<PaperSearchModelResult> {
 		result = result.concat(localResults);
 
 		if (query == this.lastSearch) {
-			result = result.concat(
-				this.lastSearchResults.map((paper, index) => {
-					return {
-						paper: paper,
-						paperIndex: index + this.localPaperData.length,
-						resultType: "semanticscholar",
-						s2Url: paper.url,
-						isFirstS2Result: index === 0,
-					};
-				})
-			);
+			result = result.concat(this.lastSearchResults);
 		}
 		// console.log(result);
 		return result;
@@ -365,7 +365,7 @@ class paperSearchModal extends SuggestModal<PaperSearchModelResult> {
 			cls: "paper-search-result-title",
 			attr: {
 				"data-paper-id": searchResult.paperIndex,
-			}
+			},
 		});
 		el.createEl("div", {
 			text: searchResult.paper.authors.join(", "),
@@ -381,25 +381,62 @@ class paperSearchModal extends SuggestModal<PaperSearchModelResult> {
 		searchResult: PaperSearchModelResult,
 		evt: MouseEvent | KeyboardEvent
 	) {
-		if (searchResult.resultType === "local") {
-			const localFilePath = searchResult.localFilePath;
-			if (localFilePath) {
-				this.obsidianScholar.openPaper(
-					localFilePath,
-					searchResult.paper
+		let allSelectedPaperIds: Number[] = [];
+
+		this.resultContainerEl.querySelectorAll(".is-added").forEach((el) => {
+			if (el.firstChild) {
+				let paperId = (el.firstChild as Element).getAttribute(
+					"data-paper-id"
 				);
-			} else {
-				new Notice("Local file path not found");
+				if (paperId) {
+					allSelectedPaperIds.push(parseInt(paperId));
+				}
 			}
-		} else {
-			const s2Url = searchResult.s2Url;
-			if (s2Url) {
-				new Notice("Download Paper From S2");
+		});
+
+		// console.log(allSelectedPaperIds);
+
+		if (allSelectedPaperIds.length > 0) {
+			let papersToDownload = this.lastSearchResults.filter(
+				(searchResult) => {
+					return allSelectedPaperIds.includes(
+						searchResult.paperIndex
+					);
+				}
+			);
+			// console.log(papersToDownload);
+			papersToDownload.forEach((searchResult, index) => {
+				new Notice(
+					"Downloading paper " +
+						(index + 1) +
+						" of " +
+						papersToDownload.length
+				);
 				this.obsidianScholar.downloadAndSavePaperNotePDF(
 					searchResult.paper
 				);
+			});
+		} else {
+			if (searchResult.resultType === "local") {
+				const localFilePath = searchResult.localFilePath;
+				if (localFilePath) {
+					this.obsidianScholar.openPaper(
+						localFilePath,
+						searchResult.paper
+					);
+				} else {
+					new Notice("Local file path not found");
+				}
 			} else {
-				new Notice("S2 URL not found");
+				const s2Url = searchResult.s2Url;
+				if (s2Url) {
+					new Notice("Download Paper From S2");
+					this.obsidianScholar.downloadAndSavePaperNotePDF(
+						searchResult.paper
+					);
+				} else {
+					new Notice("S2 URL not found");
+				}
 			}
 		}
 	}
@@ -537,16 +574,18 @@ class paperReferenceSearchModal extends SuggestModal<PaperSearchModelResult> {
 				}
 			}
 		});
-		
-		console.log(allSelectedPaperIds);
+
+		// console.log(allSelectedPaperIds);
 
 		if (allSelectedPaperIds.length > 0) {
 			let papersToDownload = this.currentSearchResults.filter(
 				(searchResult) => {
-					return allSelectedPaperIds.includes(searchResult.paperIndex);
+					return allSelectedPaperIds.includes(
+						searchResult.paperIndex
+					);
 				}
 			);
-			console.log(papersToDownload);
+			// console.log(papersToDownload);
 			papersToDownload.forEach((searchResult, index) => {
 				new Notice(
 					"Downloading paper " +
