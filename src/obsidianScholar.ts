@@ -30,7 +30,12 @@ export class ObsidianScholar {
 
 		// We need to convert the link format to a regular pdf path
 		let pdfPath = frontmatter?.pdf ?? "";
-		pdfPath = pdfPath.match(/\[\[(.*?)\]\]/)[1];
+		let matchedPdfPath = pdfPath.match(/\[\[(.*?)\]\]/);
+		if (matchedPdfPath) {
+			pdfPath = matchedPdfPath[1];
+		} else {
+			pdfPath = "";
+		}
 
 		return {
 			title: frontmatter?.title ?? file.basename,
