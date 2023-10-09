@@ -1,7 +1,7 @@
 import { App, Notice, TFile, requestUrl } from "obsidian";
 import { ObsidianScholarPluginSettings } from "./settingsTab";
 import { FILE_ALREADY_EXISTS, NOTE_TEMPLATE_DEFAULT } from "./constants";
-import { getDate } from "./utility";
+import { getDate, splitBibtex } from "./utility";
 import { StructuredPaperData } from "./paperData";
 
 export class ObsidianScholar {
@@ -30,18 +30,24 @@ export class ObsidianScholar {
 
 		// We need to convert the link format to a regular pdf path
 		let pdfPath = frontmatter?.pdf ?? "";
-		pdfPath = pdfPath.match(/\[\[(.*?)\]\]/)[1];
+		let matchedPdfPath = pdfPath.match(/\[\[(.*?)\]\]/);
+		if (matchedPdfPath) {
+			pdfPath = matchedPdfPath[1];
+		} else {
+			pdfPath = "";
+		}
 
 		return {
 			title: frontmatter?.title ?? file.basename,
 			authors: frontmatter?.authors.split(",") ?? [],
-			abstract: frontmatter?.abstract ?? "",
-			url: frontmatter?.url ?? "",
-			venue: frontmatter?.venue ?? "",
-			publicationDate: frontmatter?.year ?? "",
+			abstract: frontmatter?.abstract ?? null,
+			url: frontmatter?.url ?? null,
+			venue: frontmatter?.venue ?? null,
+			publicationDate: frontmatter?.year ?? null,
 			tags: frontmatter?.tags ?? [],
 			pdfPath: pdfPath,
-			citekey: frontmatter?.citekey ?? "",
+			citekey: frontmatter?.citekey ?? null,
+			bibtex: frontmatter?.bibtex ?? null,
 		};
 	}
 
@@ -64,9 +70,71 @@ export class ObsidianScholar {
 			});
 	}
 
-	cleanStringForFrontmatter(str: string): string {
-		return str.replace("\n", " ").replace(/\\[^bfnrtv0'"\\]/g, '').replace(/"/g, '\\"');
+	isFileInNoteLocation(file: TFile | string): boolean {
+		if (typeof file === "string") {
+			return file.startsWith(this.settings.NoteLocation);
+		} else {
+			return file.path.startsWith(this.settings.NoteLocation);
+		}
 	}
+
+	async extractPaperBibtexFromFile(
+		citekey: string
+	): Promise<string | undefined> {
+		if (
+			!this.settings.saveBibTex ||
+			this.settings.bibTexFileLocation === ""
+		) {
+			return undefined;
+		}
+
+		let bibtextFile = this.app.vault.getAbstractFileByPath(
+			this.settings.bibTexFileLocation
+		);
+		if (bibtextFile == null || !(bibtextFile instanceof TFile)) {
+			new Notice("BibTex file not found.");
+			return;
+		}
+
+		let bibtexText = await this.app.vault.adapter.read(
+			this.settings.bibTexFileLocation
+		);
+		let bibtexEntries = splitBibtex(bibtexText);
+		if (!bibtexEntries) {
+			new Notice("BibTex file is empty.");
+			return;
+		}
+
+		for (let entry of bibtexEntries) {
+			if (entry.includes(citekey)) {
+				return entry;
+			}
+		}
+		return;
+	}
+
+	async getPaperBibtex(file: TFile | string): Promise<string | undefined> {
+		if (typeof file === "string") {
+			file = this.app.vault.getAbstractFileByPath(file) as TFile;
+		}
+
+		let paperData = this.getPaperDataFromLocalFile(file);
+		if (paperData.bibtex && paperData.bibtex !== "") {
+			return paperData.bibtex;
+		}
+		
+		if (paperData.citekey && paperData.citekey !== "") {
+			return await this.extractPaperBibtexFromFile(paperData.citekey);
+		}
+	}
+
+	cleanStringForFrontmatter(str: string): string {
+		return str
+			.replace("\n", " ")
+			.replace(/\\[^bfnrtv0'"\\]/g, "")
+			.replace(/"/g, '\\"');
+	}
+
 	// prettier-ignore
 	async createFileWithTemplate(
 		paperData: StructuredPaperData,

@@ -9,7 +9,7 @@
 .paper-search-result-heading {
 	margin-top: var(--size-4-4);
 	margin-bottom: var(--size-4-3);
-	margin-left: 0; 
+	margin-left: 0;
 	padding-left: 0;
 	color: var(--text-faint);
 	font-size: var(--font-smallest);
@@ -40,4 +40,14 @@
 
 .paper-search-result-abstract.is-show {
 	display: block;
+}
+
+.suggestion-item.is-added > .paper-search-result-title {
+	color: var(--text-accent);
+}
+
+.suggestion-item.is-added > .paper-search-result-title::before {
+	content: "[✓]";
+	display: inline-block;
+	margin-right: 5px;
 }

@@ -6,6 +6,7 @@ import {
 	SEMANTIC_SCHOLAR_FIELDS,
 	SEMANTIC_SCHOLAR_API,
 	SEMANTIC_SCHOLAR_SEARCH_API,
+	SEMANTIC_SCHOLAR_REFERENCE_SEARCH_FIELDS,
 } from "./constants";
 import { request } from "obsidian";
 import { trimString } from "./utility";
@@ -87,7 +88,9 @@ function parseS2paperData(json: any) {
 	let title = json.title;
 	let abstract = json.abstract;
 
-	let authors = json.authors.map((author: any) => author.name);
+	let authors = json.authors
+		? json.authors.map((author: any) => author.name)
+		: [];
 
 	let venue = "";
 	if (json.venue != null && json.venue != "")
@@ -99,7 +102,11 @@ function parseS2paperData(json: any) {
 
 	let paperUrl = json.url;
 	let pdfUrl = "";
-	if (json["isOpenAccess"] && json["isOpenAccess"] === true && json["openAccessPdf"]) {
+	if (
+		json["isOpenAccess"] &&
+		json["isOpenAccess"] === true &&
+		json["openAccessPdf"]
+	) {
 		pdfUrl = json["openAccessPdf"]?.url;
 	}
 	if (json["externalIds"] && json["externalIds"]["ArXiv"]) {
@@ -135,23 +142,21 @@ function parseS2paperData(json: any) {
 export async function fetchSemanticScholarPaperDataFromUrl(
 	url: string
 ): Promise<StructuredPaperData> {
-	const s2Id = getIdentifierFromUrl(url);
-	let suffix = "INVALID";
-	if (url.toLowerCase().includes("arxiv")) {
-		suffix = ARXIV_URL_SUFFIX_ON_S2;
-	} else if (url.toLowerCase().includes("aclanthology")) {
-		suffix = ACL_ANTHOLOGY_URL_SUFFIX_ON_S2;
-	} else if (url.toLowerCase().includes("semanticscholar")) {
-		suffix = "";
-	} else;
+	let s2Id = getIdentifierFromUrl(url);
 
-	if (suffix === "INVALID") {
+	if (url.toLowerCase().includes("arxiv")) {
+		s2Id = ARXIV_URL_SUFFIX_ON_S2 + s2Id.split("v")[0];
+	} else if (url.toLowerCase().includes("aclanthology")) {
+		s2Id = ACL_ANTHOLOGY_URL_SUFFIX_ON_S2 + s2Id;
+	} else if (url.toLowerCase().includes("semanticscholar")) {
+		// Do nothing
+	} else {
 		console.log("Invalid url: " + url);
 		throw new Error("Invalid url: " + url);
 	}
 
 	let s2Data = await request(
-		SEMANTIC_SCHOLAR_API + suffix + s2Id + "?" + SEMANTIC_SCHOLAR_FIELDS
+		SEMANTIC_SCHOLAR_API + s2Id + "?" + SEMANTIC_SCHOLAR_FIELDS
 	);
 
 	let json = JSON.parse(s2Data);
@@ -166,7 +171,10 @@ export async function searchSemanticScholar(
 	query: string
 ): Promise<StructuredPaperData[]> {
 	let requestUrl =
-		SEMANTIC_SCHOLAR_SEARCH_API + encodeURIComponent(query) + "&" + SEMANTIC_SCHOLAR_FIELDS;
+		SEMANTIC_SCHOLAR_SEARCH_API +
+		encodeURIComponent(query) +
+		"&" +
+		SEMANTIC_SCHOLAR_FIELDS;
 
 	// console.log(requestUrl);
 
@@ -184,4 +192,39 @@ export async function searchSemanticScholar(
 	}
 
 	return json.data.map((paper: any) => parseS2paperData(paper));
+}
+
+export async function fetchSemanticScholarPaperReferences(
+	url: string
+): Promise<StructuredPaperData[]> {
+	let s2Id = getIdentifierFromUrl(url);
+
+	if (url.toLowerCase().includes("arxiv")) {
+		s2Id = ARXIV_URL_SUFFIX_ON_S2 + s2Id.split("v")[0];
+	} else if (url.toLowerCase().includes("aclanthology")) {
+		s2Id = ACL_ANTHOLOGY_URL_SUFFIX_ON_S2 + s2Id;
+	} else if (url.toLowerCase().includes("semanticscholar")) {
+		// Do nothing
+	} else {
+		console.log("Invalid url: " + url);
+		throw new Error("Invalid url: " + url);
+	}
+
+	let s2Data = await request(
+		SEMANTIC_SCHOLAR_API + s2Id + SEMANTIC_SCHOLAR_REFERENCE_SEARCH_FIELDS
+	);
+
+	let json = JSON.parse(s2Data);
+
+	if (json.error != null) {
+		throw new Error(json.error);
+	}
+
+	if (json.data == null || json.data.length == 0 || json?.total == 0) {
+		throw new Error("No data returned");
+	}
+
+	return json.data.map((citedPaperData: any) =>
+		parseS2paperData(citedPaperData["citedPaper"])
+	);
 }

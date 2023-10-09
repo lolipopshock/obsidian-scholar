@@ -2,12 +2,16 @@
 
 ## Usage  
 
-### A typical pipeline 
+### Key Features
 
 | Description                                                                                                                                                                                                                     | Demo                                               |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
-| **Add Paper** <br/> Upon seeing a paper on the web (Slack, Twitter, etc.), you can add the paper to your local library: running this tool can download the paper PDF, and create the corresponding paper note with paper metadata. | ![01-add-paper.gif](.github/demo/01-add-paper.gif) |
-| **Search and Retrieval** <br/> You can quickly search and retrieve the papers in your library, as well as optionally search and add papers from SemanticScholar directly (use shift ↵ to search on SemanticScholar). | ![02-search-paper.gif](.github/demo/02-search-paper.gif) |
+| 📚 Streamline Library Management | 
+| **Add Paper from External Link** <br/> Upon seeing a paper on the web (Slack, Twitter, etc.), you can add the paper to your local library: running this tool can download the paper PDF, and create the corresponding paper note with paper metadata. | ![01-add-paper.gif](.github/demo/01-add-paper.gif) |
+| **Search and Retrieval** <br/> You can quickly search and retrieve the papers in your library, as well as optionally query and find papers from SemanticScholar directly if they are not in your library. | ![02-search-paper.gif](.github/demo/02-search-paper.gif) |
+| ✨ Enhance Paper Reading |
+| **Check Reference** <br/> Obsidian Scholar allows you checking the details of the referred papers without leaving the tool. | ![03-search-paper.gif](.github/demo/03-check-paper-reference.gif) |
+| **Copy Paper BibTex**  | ![04-copy-bibtex.gif](.github/demo/04-copy-bibtex.gif) |
 
 ## Motivation and Acknowledgement 
 
