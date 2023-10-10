@@ -1,6 +1,6 @@
 {
-	"id": "obsidian-scholar",
-	"name": "Obsidian Scholar",
+	"id": "scholar",
+	"name": "Scholar",
 	"version": "1.2.0",
 	"minAppVersion": "0.15.0",
 	"description": "Streamline Research Workflow in Obsidian",
