@@ -16,7 +16,7 @@ export class ObsidianScholar {
 	) {
 		this.app = app;
 		this.settings = settings;
-		this.pathSep = pathSep;
+		this.pathSep = pathSep ? pathSep : "/";
 	}
 
 	constructFileName(paperData: StructuredPaperData): string {
@@ -122,7 +122,6 @@ export class ObsidianScholar {
 		if (paperData.bibtex && paperData.bibtex !== "") {
 			return paperData.bibtex;
 		}
-		
 		if (paperData.citekey && paperData.citekey !== "") {
 			return await this.extractPaperBibtexFromFile(paperData.citekey);
 		}
