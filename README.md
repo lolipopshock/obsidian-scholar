@@ -13,6 +13,19 @@
 | **Check Paper Reference** |  Obsidian Scholar allows you checking the details of the referred papers without leaving the tool. <br/> ![03-search-paper.gif](.github/demo/03-check-paper-reference.gif) |
 | **Copy Paper BibTex** | ![04-copy-bibtex.gif](.github/demo/04-copy-bibtex.gif) |
 
+## Installation 
+
+### Install from Obsidian Plugin Library 
+
+This plugin will be released upon the approval of the maintainers. See [this PR](https://github.com/obsidianmd/obsidian-releases/pull/2525).  
+
+### Manual Installation 
+
+1. Open the `.obsidian/plugins` folder in your vault
+2. Create a folder called `scholar` 
+3. Download the three files `manifest.json`, `styles.css`, and `main.js` from the [latest release](https://github.com/lolipopshock/obsidian-scholar/releases/latest), and put the files in the `.obsidian/plugins/scholar` folder you just created. 
+4. Open Obsidian and in `settings > community plugins`, find `Scholar` and enable the plugin. Be sure to change the `Scholar` settings properly before use. 
+
 ## Motivation and Acknowledgement 
 
 The goal of *Obsidian Scholar* is to create a smooth experience that spans from paper reading, note taking, and reflection and synthesis. 
