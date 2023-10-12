@@ -34,6 +34,9 @@ export const COMMAND_SEARCH_PAPER_REFERENCES_NAME = "Search Paper References";
 export const COMMAND_REMOVE_PAPER = "remove-paper";
 export const COMMAND_REMOVE_PAPER_NAME = "Remove Paper from Library";
 
+export const COMMAND_OPEN_PDF_IN_SYSTEM_APP = "open-pdf-in-system-app";
+export const COMMAND_OPEN_PDF_IN_SYSTEM_APP_NAME = "Open PDF in System App";
+
 
 // Settings 
 export const SETTING_HEADER = "ObScholar Settings";

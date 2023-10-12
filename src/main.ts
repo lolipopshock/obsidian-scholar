@@ -24,12 +24,14 @@ import {
 	COMMAND_PAPER_MODAL_PLACEHOLDERS,
 	COMMAND_SEARCH_PAPER_REFERENCES,
 	COMMAND_SEARCH_PAPER_REFERENCES_NAME,
-	NOTICE_RETRIEVING_ARXIV,
-	NOTICE_RETRIEVING_S2,
 	COMMAND_COPY_PAPER_BIBTEX,
 	COMMAND_COPY_PAPER_BIBTEX_NAME,
 	COMMAND_REMOVE_PAPER,
 	COMMAND_REMOVE_PAPER_NAME,
+	COMMAND_OPEN_PDF_IN_SYSTEM_APP,
+	COMMAND_OPEN_PDF_IN_SYSTEM_APP_NAME,
+	NOTICE_RETRIEVING_ARXIV,
+	NOTICE_RETRIEVING_S2,
 	NOTICE_SEARCH_BIBTEX_NOT_FOUND,
 	NOTICE_SEARCH_BIBTEX_ERROR,
 	NOTICE_SEARCH_BIBTEX_COPIED,
@@ -180,6 +182,25 @@ export default class ObsidianScholarPlugin extends Plugin {
 					this.obsidianScholar,
 					currentFile
 				).open();
+			},
+		});
+
+		this.addCommand({
+			id: COMMAND_OPEN_PDF_IN_SYSTEM_APP,
+			name: COMMAND_OPEN_PDF_IN_SYSTEM_APP_NAME,
+			checkCallback: (checking: boolean) => {
+				const currentFile = this.app.workspace.getActiveFile();
+
+				if (!currentFile) {
+					return false;
+				} else {
+					if (!checking) {
+						this.obsidianScholar.openPdfWithSystemViewer(
+							currentFile
+						);
+					}
+					return true;
+				}
 			},
 		});
 
@@ -906,7 +927,9 @@ class confirmDeleteModal extends Modal {
 					.onClick(() => {
 						this.close();
 						// console.log("Confirm");
-						this.obsidianScholar.removePaperFromPath(this.paperPaths);
+						this.obsidianScholar.removePaperFromPath(
+							this.paperPaths
+						);
 					})
 			);
 	}
