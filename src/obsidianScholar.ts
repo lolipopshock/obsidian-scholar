@@ -1,8 +1,16 @@
-import { App, Notice, TFile, requestUrl } from "obsidian";
+import {
+	App,
+	Notice,
+	TFile,
+	requestUrl,
+	Platform,
+	FileSystemAdapter,
+} from "obsidian";
 import { ObsidianScholarPluginSettings } from "./settingsTab";
 import { FILE_ALREADY_EXISTS, NOTE_TEMPLATE_DEFAULT } from "./constants";
 import { getDate, splitBibtex } from "./utility";
 import { StructuredPaperData } from "./paperData";
+import { exec } from "child_process";
 
 export class ObsidianScholar {
 	settings: ObsidianScholarPluginSettings;
@@ -256,6 +264,42 @@ export class ObsidianScholar {
 		});
 	}
 
+	async openPdfWithSystemViewer(currentFile: TFile) {
+		if (!Platform.isMacOS) {
+			new Notice("This feature is only available on macOS.");
+			return;
+		}
+
+		let pdfPath = "";
+		if (
+			currentFile.extension == "md" &&
+			this.isFileInNoteLocation(currentFile)
+		) {
+			let paperData = this.getPaperDataFromLocalFile(currentFile);
+			if (paperData.pdfPath) {
+				pdfPath = paperData.pdfPath;
+			}
+		} else if (currentFile.extension == "pdf") {
+			pdfPath = currentFile.path;
+		} else {
+			new Notice("The current file is not a pdf or a note.");
+			return;
+		}
+
+		let absolutePath = (
+			this.app.vault.adapter as FileSystemAdapter
+		).getFullPath(pdfPath);
+
+		exec(`open -a Preview "${absolutePath}"`, (error, stdout, stderr) => {
+			if (error) {
+				console.error(`exec error: ${error}`);
+				return;
+			}
+			// console.log(`stdout: ${stdout}`);
+			// console.error(`stderr: ${stderr}`);
+		});
+	}
+
 	async saveBibTex(bibtex: string) {
 		if (this.settings.saveBibTex === false) {
 			return;
@@ -355,7 +399,7 @@ export class ObsidianScholar {
 			}
 		}
 
-		// We have to batch the citekey removal request because we can't read and 
+		// We have to batch the citekey removal request because we can't read and
 		// write to the same file at the same time
 		if (this.settings.bibTexFileLocation) {
 			let bibTexPath = this.settings.bibTexFileLocation;
@@ -376,7 +420,8 @@ export class ObsidianScholar {
 			}
 
 			bibtexEntries = bibtexEntries.filter(
-				(entry) => !citeKeysToRemove.some(citekey => entry.includes(citekey))
+				(entry) =>
+					!citeKeysToRemove.some((citekey) => entry.includes(citekey))
 			);
 			// console.log(bibtexEntries);
 			let newBibtexText = bibtexEntries.join("\n\n");
