@@ -315,4 +315,75 @@ export class ObsidianScholar {
 		// console.log("Saving bibtex...");
 		paperData?.bibtex && (await this.saveBibTex(paperData.bibtex));
 	}
+
+	async removePaperFromPath(pathsToFile: string[]) {
+		let citeKeysToRemove: string[] = [];
+		for (let pathToFile of pathsToFile) {
+			if (await this.app.vault.adapter.exists(pathToFile)) {
+				// Step 1: Find the note file
+				let noteFile = this.app.vault.getAbstractFileByPath(pathToFile);
+				if (noteFile == null || !(noteFile instanceof TFile)) {
+					new Notice("Note file not found.");
+					return;
+				}
+
+				let paperData = this.getPaperDataFromLocalFile(noteFile);
+				// Step 2: Add the citekeys to the list of citekeys to remove
+				if (paperData.citekey) {
+					citeKeysToRemove.push(paperData.citekey);
+				}
+
+				// Step 3: Find the pdf file and remove it
+				if (paperData.pdfPath) {
+					let pdfFile = this.app.vault.getAbstractFileByPath(
+						paperData.pdfPath
+					);
+					if (pdfFile == null || !(pdfFile instanceof TFile)) {
+						new Notice("PDF file not found.");
+						return;
+					}
+					await this.app.vault.delete(pdfFile);
+				}
+
+				// Step 4: Finally remove the note file
+				await this.app.vault.delete(noteFile);
+				new Notice(
+					"Paper " + paperData.title + "removed from the library."
+				);
+			} else {
+				new Notice("File" + pathToFile + "not found.");
+			}
+		}
+
+		// We have to batch the citekey removal request because we can't read and 
+		// write to the same file at the same time
+		if (this.settings.bibTexFileLocation) {
+			let bibTexPath = this.settings.bibTexFileLocation;
+			let bibtextFile = this.app.vault.getAbstractFileByPath(bibTexPath);
+			if (bibtextFile == null || !(bibtextFile instanceof TFile)) {
+				new Notice("BibTex file not found.");
+				return;
+			}
+
+			let bibtexText = await this.app.vault.adapter.read(
+				this.settings.bibTexFileLocation
+			);
+
+			let bibtexEntries = splitBibtex(bibtexText);
+			if (!bibtexEntries) {
+				new Notice("BibTex file is empty.");
+				return;
+			}
+
+			bibtexEntries = bibtexEntries.filter(
+				(entry) => !citeKeysToRemove.some(citekey => entry.includes(citekey))
+			);
+			// console.log(bibtexEntries);
+			let newBibtexText = bibtexEntries.join("\n\n");
+			await this.app.vault.adapter.write(
+				this.settings.bibTexFileLocation,
+				newBibtexText
+			);
+		}
+	}
 }
