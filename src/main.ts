@@ -1,4 +1,12 @@
-import { App, SuggestModal, Modal, Notice, Plugin } from "obsidian";
+import {
+	App,
+	SuggestModal,
+	Modal,
+	Notice,
+	Plugin,
+	TFile,
+	Setting,
+} from "obsidian";
 import {
 	StructuredPaperData,
 	fetchArxivPaperDataFromUrl,
@@ -20,10 +28,13 @@ import {
 	NOTICE_RETRIEVING_S2,
 	COMMAND_COPY_PAPER_BIBTEX,
 	COMMAND_COPY_PAPER_BIBTEX_NAME,
+	COMMAND_REMOVE_PAPER,
+	COMMAND_REMOVE_PAPER_NAME,
 	NOTICE_SEARCH_BIBTEX_NOT_FOUND,
 	NOTICE_SEARCH_BIBTEX_ERROR,
 	NOTICE_SEARCH_BIBTEX_COPIED,
 	NOTICE_PAPER_NOTE_DOWNLOAD_ERROR,
+	NOTICE_DOWNLOADING_S2,
 } from "./constants";
 import { isValidUrl } from "./utility";
 import {
@@ -157,6 +168,21 @@ export default class ObsidianScholarPlugin extends Plugin {
 			},
 		});
 
+		this.addCommand({
+			id: COMMAND_REMOVE_PAPER,
+			name: COMMAND_REMOVE_PAPER_NAME,
+			callback: () => {
+				const currentFile = this.app.workspace.getActiveFile();
+
+				new paperRemoveModal(
+					this.app,
+					this.settings,
+					this.obsidianScholar,
+					currentFile
+				).open();
+			},
+		});
+
 		this.addSettingTab(new ObsidianScholarSettingTab(this.app, this));
 
 		// We want to be able to view bibtex files in obsidian
@@ -275,7 +301,13 @@ class paperSearchModal extends SuggestModal<PaperSearchModelResult> {
 		}
 		// After the sleep our search is still the last -- so the user stopped and we can go on
 		this.lastSearch = query;
-		let searchResult = await searchSemanticScholar(query);
+		let searchResult: StructuredPaperData[] = [];
+		try {
+			searchResult = await searchSemanticScholar(query);
+		} catch (error) {
+			new Notice("Errors when downloading papers from Semanticscholar");
+			console.error(error);
+		}
 
 		this.lastSearchResults = searchResult.map((paper, index) => {
 			return {
@@ -432,7 +464,7 @@ class paperSearchModal extends SuggestModal<PaperSearchModelResult> {
 			} else {
 				const s2Url = searchResult.s2Url;
 				if (s2Url) {
-					new Notice("Download Paper From S2");
+					new Notice(NOTICE_DOWNLOADING_S2);
 					this.obsidianScholar.downloadAndSavePaperNotePDF(
 						searchResult.paper
 					);
@@ -476,7 +508,7 @@ class paperReferenceSearchModal extends SuggestModal<PaperSearchModelResult> {
 			["↑↓", "to navigate"],
 			["↵", "to open"],
 			["⇥ (tab)", "to expand search result"],
-			["⇧ ⇥", "to add paper to collection"],
+			["⇧ ⇥", "to add paper to selection"],
 			["esc", "to dismiss"],
 		];
 
@@ -612,6 +644,276 @@ class paperReferenceSearchModal extends SuggestModal<PaperSearchModelResult> {
 
 	onClose(): void {
 		document.removeEventListener("keydown", this.keyListener);
+	}
+}
+
+// The Paper Search Modal
+class paperRemoveModal extends SuggestModal<PaperSearchModelResult> {
+	private settings: ObsidianScholarPluginSettings;
+	private obsidianScholar: ObsidianScholar;
+	private keyListener: KeyListener;
+	private currentFile: TFile | null;
+	private localPaperData: PaperSearchModelResult[] = [];
+
+	constructor(
+		app: App,
+		settings: ObsidianScholarPluginSettings,
+		obsidianScholar: ObsidianScholar,
+		currentFile: TFile | null
+	) {
+		super(app);
+		this.settings = settings;
+		this.obsidianScholar = obsidianScholar;
+		this.currentFile = currentFile;
+
+		// Adding the instructions
+		const instructions = [
+			["↑↓", "to navigate"],
+			["↵", "to open"],
+			["⇥ (tab)", "to expand search result"],
+			["⇧ ⇥", "to add paper to selection"],
+			["esc", "to dismiss"],
+		];
+
+		const modalInstructionsHTML = this.modalEl.createEl("div", {
+			cls: "prompt-instructions",
+		});
+		for (const instruction of instructions) {
+			const modalInstructionHTML = modalInstructionsHTML.createDiv({
+				cls: "prompt-instruction",
+			});
+			modalInstructionHTML.createSpan({
+				cls: "prompt-instruction-command",
+				text: instruction[0],
+			});
+			modalInstructionHTML.createSpan({ text: instruction[1] });
+		}
+
+		this.setPlaceholder("Type paper to remove");
+
+		this.localPaperData = this.app.vault
+			.getMarkdownFiles()
+			.filter((file) => file.path.startsWith(this.settings.NoteLocation))
+			.map((file, index) => {
+				return {
+					paper: this.obsidianScholar.getPaperDataFromLocalFile(file),
+					resultType: "local",
+					localFilePath: file.path,
+					paperIndex: index,
+				};
+			}); // We need to store the filepath as well
+
+		// Reorder the localPaperData to make sure we have the current file at the top
+		if (currentFile != null) {
+			if (
+				this.localPaperData.some(
+					(paper) => paper.localFilePath === currentFile.path
+				)
+			) {
+				let currentPaper = this.localPaperData.find(
+					(paper) => paper.localFilePath === currentFile.path
+				);
+				if (currentPaper === undefined) {
+					throw new Error(
+						"Current paper not found in local paper data"
+					);
+				}
+				this.localPaperData = [
+					currentPaper,
+					...this.localPaperData.filter(
+						(paper) => paper.localFilePath !== currentFile.path
+					),
+				];
+			}
+		}
+	}
+
+	searchLocalPapers(query: string): PaperSearchModelResult[] {
+		// console.log("Searching local papers");
+		let results = this.localPaperData.filter((paper) => {
+			return (
+				paper.paper.title.toLowerCase().contains(query.toLowerCase()) ||
+				paper.paper.authors
+					.map((author) => author.toLowerCase())
+					.some((author) => author.contains(query.toLowerCase()))
+			);
+		});
+		return results;
+	}
+
+	onOpen(): void {
+		// Inspired by https://github.com/solderneer/obsidian-ai-tools/blob/313a9b9353001a88f731fde86beb80cc76412ebc/src/main.ts#L319
+		this.keyListener = async (event: KeyboardEvent) => {
+			if (event.repeat) return;
+
+			if (event.shiftKey && event.key === "Tab") {
+				const selectedItem = document.querySelector(
+					".suggestion-item.is-selected"
+				);
+				if (selectedItem) {
+					selectedItem.classList.toggle("is-added");
+				}
+			}
+
+			if (!event.shiftKey && event.key === "Tab") {
+				// console.log("Tab pressed");
+				const abstractHTML = document.querySelector(
+					".suggestion-item.is-selected > .paper-search-result-abstract"
+				);
+				if (abstractHTML) {
+					abstractHTML.classList.toggle("is-show");
+				}
+			}
+		};
+		document.addEventListener("keydown", this.keyListener);
+		super.onOpen();
+	}
+
+	getSuggestions(query: string): PaperSearchModelResult[] {
+		if (query.trim() === "") {
+			return this.localPaperData;
+		}
+
+		let result: PaperSearchModelResult[] = [];
+
+		let localResults = this.searchLocalPapers(query);
+		result = result.concat(localResults);
+
+		return result;
+	}
+
+	renderSuggestion(searchResult: PaperSearchModelResult, el: HTMLElement) {
+		el.createEl("div", {
+			text: searchResult.paper.title,
+			cls: "paper-search-result-title",
+			attr: {
+				"data-paper-id": searchResult.paperIndex,
+			},
+		});
+		el.createEl("div", {
+			text: searchResult.paper.authors.join(", "),
+			cls: "paper-search-result-authors",
+		});
+		el.createEl("div", {
+			text: searchResult.paper.abstract,
+			cls: "paper-search-result-abstract",
+		});
+	}
+
+	onChooseSuggestion(
+		searchResult: PaperSearchModelResult,
+		evt: MouseEvent | KeyboardEvent
+	) {
+		let allSelectedPaperIds: Number[] = [];
+
+		this.resultContainerEl.querySelectorAll(".is-added").forEach((el) => {
+			if (el.firstChild) {
+				let paperId = (el.firstChild as Element).getAttribute(
+					"data-paper-id"
+				);
+				if (paperId) {
+					allSelectedPaperIds.push(parseInt(paperId));
+				}
+			}
+		});
+
+		// console.log(allSelectedPaperIds);
+
+		if (allSelectedPaperIds.length > 0) {
+			let papersToRemove = this.localPaperData.filter((searchResult) => {
+				return allSelectedPaperIds.includes(searchResult.paperIndex);
+			});
+			// console.log(papersToDownload);
+			new confirmDeleteModal(
+				this.app,
+				this.settings,
+				this.obsidianScholar,
+				papersToRemove
+					.map((paper) => paper.localFilePath)
+					.filter(
+						(path: string | undefined): path is string =>
+							path !== undefined
+					)
+			).open();
+		} else {
+			const localFilePath = searchResult.localFilePath;
+			if (localFilePath) {
+				new Notice("Removing papers from library");
+				// this.obsidianScholar.openPaper(
+				// 	localFilePath,
+				// 	searchResult.paper
+				// );
+				// this.close();
+				new confirmDeleteModal(
+					this.app,
+					this.settings,
+					this.obsidianScholar,
+					[localFilePath]
+				).open();
+			} else {
+				new Notice("Local file path not found");
+			}
+		}
+	}
+
+	onNoSuggestion() {
+		this.resultContainerEl.empty();
+	}
+
+	onClose(): void {
+		document.removeEventListener("keydown", this.keyListener);
+	}
+}
+
+class confirmDeleteModal extends Modal {
+	private settings: ObsidianScholarPluginSettings;
+	private obsidianScholar: ObsidianScholar;
+	private paperPaths: string[];
+
+	constructor(
+		app: App,
+		settings: ObsidianScholarPluginSettings,
+		obsidianScholar: ObsidianScholar,
+		paperPaths: string[]
+	) {
+		super(app);
+		this.settings = settings;
+		this.obsidianScholar = obsidianScholar;
+		this.paperPaths = paperPaths;
+	}
+
+	onOpen() {
+		const { contentEl } = this;
+		contentEl.createEl("h1", {
+			text: "Are you sure to remove the following papers?",
+		});
+		const paperList = contentEl.createEl("ul");
+		this.paperPaths.forEach((paperPath) => {
+			paperList.createEl("li", { text: paperPath });
+		});
+
+		new Setting(contentEl)
+			.addButton((btn) =>
+				btn.setButtonText("No").onClick(() => {
+					this.close();
+					// console.log("Not Confirm");
+				})
+			)
+			.addButton((btn) =>
+				btn
+					.setButtonText("Yes")
+					.setWarning()
+					.onClick(() => {
+						this.close();
+						// console.log("Confirm");
+						this.obsidianScholar.removePaperFromPath(this.paperPaths);
+					})
+			);
+	}
+
+	onClose() {
+		let { contentEl } = this;
+		contentEl.empty();
 	}
 }
 

@@ -5,7 +5,7 @@ export const ARXIV_BIBTEX_API = "https://arxiv.org/bibtex/";
 export const ARXIV_REST_API = "https://export.arxiv.org/api/query?id_list=";
 export const ARXIV_URL_SUFFIX_ON_S2 = "arXiv:";
 export const ACL_ANTHOLOGY_URL_SUFFIX_ON_S2 = "ACL:";
-export const SEMANTIC_SCHOLAR_FIELDS = "fields=authors,title,abstract,url,venue,year,publicationDate,externalIds,isOpenAccess,openAccessPdf,citationStyles";
+export const SEMANTIC_SCHOLAR_FIELDS = "fields=authors,title,abstract,url,venue,year,publicationDate,externalIds,isOpenAccess,openAccessPdf,citationStyles&limit=50";
 export const SEMANTIC_SCHOLAR_API = "https://api.semanticscholar.org/graph/v1/paper/";
 export const SEMANTIC_SCHOLAR_SEARCH_API = "https://api.semanticscholar.org/graph/v1/paper/search/?query=";
 export const SEMANTIC_SCHOLAR_REFERENCE_SEARCH_FIELDS = "/references?fields=authors,title,abstract,url,venue,year,publicationDate,externalIds,isOpenAccess,openAccessPdf,citationStyles&limit=50"
@@ -13,7 +13,7 @@ export const SEMANTIC_SCHOLAR_REFERENCE_SEARCH_FIELDS = "/references?fields=auth
 
 // Commands and Messages 
 export const COMMAND_PAPER_NOTE_ID = "create-paper-note-from-url";
-export const COMMAND_PAPER_NOTE_NAME = "Download paper and Create Note";
+export const COMMAND_PAPER_NOTE_NAME = "Add paper to Library";
 export const COMMAND_PAPER_MODAL_TITLE = "Enter a Paper URL";
 export const COMMAND_PAPER_MODAL_PLACEHOLDERS = [
     "https://arxiv.org/abs/xxxx.xxxx",
@@ -29,7 +29,10 @@ export const COMMAND_COPY_PAPER_BIBTEX = "copy-paper-bibtex";
 export const COMMAND_COPY_PAPER_BIBTEX_NAME = "Copy Paper BibTeX";
 
 export const COMMAND_SEARCH_PAPER_REFERENCES = "search-paper-references";
-export const COMMAND_SEARCH_PAPER_REFERENCES_NAME = "Search Papers References";
+export const COMMAND_SEARCH_PAPER_REFERENCES_NAME = "Search Paper References";
+
+export const COMMAND_REMOVE_PAPER = "remove-paper";
+export const COMMAND_REMOVE_PAPER_NAME = "Remove Paper from Library";
 
 
 // Settings 
@@ -63,6 +66,8 @@ export const SETTING_ADD_TO_BIB_FILE_TARGET = "";
 // NOTICES 
 export const NOTICE_RETRIEVING_ARXIV = "Retrieving paper information from arXiv API.";
 export const NOTICE_RETRIEVING_S2 = "Retrieving paper information from Semantic Scholar API.";
+export const NOTICE_DOWNLOADING_S2 = "Downloading Paper From S2";
+
 export const NOTICE_NOT_BIB_FILE = "The file you selected is not a .bib file.";
 export const NOTICE_NO_BIB_FILE_SELECTED = "No .bib file is selected. Please create one first.";
 export const NOTICE_PAPER_NOTE_DOWNLOAD_ERROR = "Something went wrong. Check the Obsidian console if the error persists.";
