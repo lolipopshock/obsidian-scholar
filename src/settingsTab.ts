@@ -1,7 +1,7 @@
 import { App, TFolder, Notice, PluginSettingTab, Setting } from "obsidian";
 
 import {
-	SETTING_HEADER,
+	SETTING_GENERAL_HEADER,
 	SETTING_NOTE_FOLDER_NAME,
 	SETTING_NOTE_FOLDER_DESC,
 	SETTING_NOTE_FOLDER_DEFAULT,
@@ -11,10 +11,16 @@ import {
 	SETTING_PDF_DOWNLOAD_DESC,
 	SETTING_PDF_DOWNLOAD_FOLDER_DEFAULT,
 	SETTING_IS_OPEN_PDF_WITH_NOTE_NAME,
+	SETTING_IS_OPEN_PDF_WITH_NOTE_DESC,
 	SETTING_IS_ADD_TO_BIB_FILE_NAME,
 	SETTING_IS_ADD_TO_BIB_FILE_DESC,
 	SETTING_ADD_TO_BIB_FILE_NAME,
 	SETTING_ADD_TO_BIB_FILE_DESC,
+	SETTING_NOTE_HEADER,
+	SETTING_FRONTMATTER_ADD_ALIASES_NAME,
+	SETTING_FRONTMATTER_ADD_ALIASES_DESC,
+	SETTING_FRONTMATTER_ADD_ANNOTATION_NAME,
+	SETTING_FRONTMATTER_ADD_ANNOTATION_DESC,
 	NOTICE_NOT_BIB_FILE,
 	NOTICE_NO_BIB_FILE_SELECTED,
 } from "./constants";
@@ -30,6 +36,8 @@ export interface ObsidianScholarPluginSettings {
 	openPdfAfterDownload: boolean;
 	saveBibTex: boolean;
 	bibTexFileLocation: string;
+	noteAddFrontmatterAliases: boolean;
+	noteAddFrontmatterAnnotation: boolean;
 }
 
 export const DEFAULT_SETTINGS: ObsidianScholarPluginSettings = {
@@ -40,6 +48,8 @@ export const DEFAULT_SETTINGS: ObsidianScholarPluginSettings = {
 	openPdfAfterDownload: false,
 	saveBibTex: false,
 	bibTexFileLocation: "",
+	noteAddFrontmatterAliases: false,
+	noteAddFrontmatterAnnotation: false,
 };
 
 // Settings Tab
@@ -56,7 +66,7 @@ export class ObsidianScholarSettingTab extends PluginSettingTab {
 
 		containerEl.empty();
 
-		containerEl.createEl("h2", { text: SETTING_HEADER });
+		containerEl.createEl("h2", { text: SETTING_GENERAL_HEADER });
 
 		let folders = this.app.vault
 			.getAllLoadedFiles()
@@ -73,12 +83,6 @@ export class ObsidianScholarSettingTab extends PluginSettingTab {
 		// NAMING_TYPES.forEach((record) => {
 		// 	namingOptions[record] = record;
 		// });
-
-		let files = this.app.vault.getMarkdownFiles().map((file) => file.path);
-		let templateOptions: Record<string, string> = {};
-		files.forEach((record) => {
-			templateOptions[record] = record;
-		});
 
 		let pdfDownloadFolderOptions: Record<string, string> = {};
 		folders.forEach((record) => {
@@ -109,19 +113,6 @@ export class ObsidianScholarSettingTab extends PluginSettingTab {
 			);
 
 		new Setting(containerEl)
-			.setName(SETTING_TEMPLATE_NAME)
-			.setDesc(SETTING_TEMPLATE_DESC)
-			.addDropdown((dropdown) =>
-				dropdown
-					.addOptions(templateOptions)
-					.setValue(this.plugin.settings.templateFileLocation)
-					.onChange(async (value) => {
-						this.plugin.settings.templateFileLocation = value;
-						await this.plugin.saveSettings();
-					})
-			);
-
-		new Setting(containerEl)
 			.setName(SETTING_PDF_DOWNLOAD_NAME)
 			.setDesc(SETTING_PDF_DOWNLOAD_DESC)
 			.addDropdown((dropdown) =>
@@ -136,6 +127,7 @@ export class ObsidianScholarSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName(SETTING_IS_OPEN_PDF_WITH_NOTE_NAME)
+			.setDesc(SETTING_IS_OPEN_PDF_WITH_NOTE_DESC)
 			.addToggle((toggle) =>
 				toggle
 					.setValue(this.plugin.settings.openPdfAfterDownload)
@@ -213,5 +205,52 @@ export class ObsidianScholarSettingTab extends PluginSettingTab {
 						})
 				);
 		}
+
+		containerEl.createEl("h2", { text: SETTING_NOTE_HEADER });
+
+		new Setting(containerEl)
+			.setName(SETTING_FRONTMATTER_ADD_ALIASES_NAME)
+			.setDesc(SETTING_FRONTMATTER_ADD_ALIASES_DESC)
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.plugin.settings.noteAddFrontmatterAliases)
+					.onChange(async (value) => {
+						this.plugin.settings.noteAddFrontmatterAliases = value;
+						await this.plugin.saveSettings();
+					})
+			);
+
+		new Setting(containerEl)
+			.setName(SETTING_FRONTMATTER_ADD_ANNOTATION_NAME)
+			.setDesc(SETTING_FRONTMATTER_ADD_ANNOTATION_DESC)
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.plugin.settings.noteAddFrontmatterAnnotation)
+					.onChange(async (value) => {
+						this.plugin.settings.noteAddFrontmatterAnnotation =
+							value;
+						await this.plugin.saveSettings();
+					})
+			);
+
+		let files = this.app.vault.getMarkdownFiles().map((file) => file.path);
+		let templateOptions: Record<string, string> = {};
+		files.forEach((record) => {
+			templateOptions[record] = record;
+		});
+		templateOptions[""] = "(none)";
+
+		new Setting(containerEl)
+			.setName(SETTING_TEMPLATE_NAME)
+			.setDesc(SETTING_TEMPLATE_DESC)
+			.addDropdown((dropdown) =>
+				dropdown
+					.addOptions(templateOptions)
+					.setValue(this.plugin.settings.templateFileLocation)
+					.onChange(async (value) => {
+						this.plugin.settings.templateFileLocation = value;
+						await this.plugin.saveSettings();
+					})
+			);
 	}
 }

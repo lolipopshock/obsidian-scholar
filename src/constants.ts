@@ -39,32 +39,40 @@ export const COMMAND_OPEN_PDF_IN_SYSTEM_APP_NAME = "Open PDF in System App";
 
 
 // Settings 
-export const SETTING_HEADER = "ObScholar Settings";
+export const SETTING_GENERAL_HEADER = "Library Settings";
 
 export const SETTING_NOTE_FOLDER_NAME = "Note folder";
 export const SETTING_NOTE_FOLDER_DESC = "Folder to create paper notes in.";
 export const SETTING_NOTE_FOLDER_DEFAULT = "(root of the vault)";
-
-export const SETTING_NOTE_NAME = "Note naming";
-export const SETTING_NOTE_DESC = "Method to name the note.";
-
-export const SETTING_TEMPLATE_NAME = "Template";
-export const SETTING_TEMPLATE_DESC = "Use the default paper template or you own template.";
-export const SETTING_TEMPLATE_FOLDER_DEFAULT = "template";
 
 export const SETTING_PDF_DOWNLOAD_NAME = "PDF folder";
 export const SETTING_PDF_DOWNLOAD_DESC = "Choose the path to download the PDF to.";
 export const SETTING_PDF_DOWNLOAD_FOLDER_DEFAULT = "(root of the vault)";
 
 export const SETTING_IS_OPEN_PDF_WITH_NOTE_NAME = "Open PDF with note?";
-export const SETTING_IS_OPEN_PDF_WITH_NOTE_DESC = "Whether to open the PDF after paper download or search.";
+export const SETTING_IS_OPEN_PDF_WITH_NOTE_DESC = "Whether to open the PDF alongside the note.";
 
-export const SETTING_IS_ADD_TO_BIB_FILE_NAME = "Save paper BibTex to a .bib file?";
+export const SETTING_IS_ADD_TO_BIB_FILE_NAME = "Save paper BibTeX to a .bib file?";
 export const SETTING_IS_ADD_TO_BIB_FILE_DESC = "If disabled, you cannot execute the \"Copy Paper BibTeX\" command.";
 
 export const SETTING_ADD_TO_BIB_FILE_NAME = "Save the BibTeX to";
 export const SETTING_ADD_TO_BIB_FILE_DESC = "Choose the .bib file to save the BibTeX to.";
 export const SETTING_ADD_TO_BIB_FILE_TARGET = "";
+
+export const SETTING_NOTE_HEADER = "Note Settings";
+
+export const SETTING_FRONTMATTER_ADD_ALIASES_NAME = "Add aliases key in the note frontmatter?";
+export const SETTING_FRONTMATTER_ADD_ALIASES_DESC = "If enabled, it will add the @{{citeky}} as an alias to the note.";
+
+export const SETTING_FRONTMATTER_ADD_ANNOTATION_NAME = "Add annotation key in the note frontmatter?";
+export const SETTING_FRONTMATTER_ADD_ANNOTATION_DESC = "If enabled, it will add the annotation-target key; use with the Annotator plugin.";
+
+export const SETTING_NOTE_NAME = "Note naming";
+export const SETTING_NOTE_DESC = "Method to name the note.";
+
+export const SETTING_TEMPLATE_NAME = "Note Template";
+export const SETTING_TEMPLATE_DESC = "If set, we will use you own template for the paper note.";
+export const SETTING_TEMPLATE_FOLDER_DEFAULT = "template";
 
 // NOTICES 
 export const NOTICE_RETRIEVING_ARXIV = "Retrieving paper information from arXiv API.";
@@ -81,16 +89,15 @@ export const NOTICE_SEARCH_BIBTEX_ERROR = "The BibTeX for this paper is not foun
 export const NOTICE_SEARCH_BIBTEX_COPIED = "The BibTeX of this paper is copied to the clipboard.";
 
 // TEMPLATE
-export const NOTE_TEMPLATE_DEFAULT = `---
-title: "{{title}}"
+export const NOTE_FRONTMATTER_DEFAULT = `title: "{{title}}"
 added: "{{date}}"
 authors: "{{authors}}"
 tags: 
 url: "{{url}}"
 pdf: "{{pdf}}"
 citekey: "{{citekey}}"
-abstract: "{{abstract}}"
----
+abstract: "{{abstract}}"`;
 
-`;
+export const NOTE_FRONTMATTER_ALIASES = `aliases: "@{{citekey}}"`;
+export const NOTE_FRONTMATTER_ANNOTATION = `annotation-target: "{{pdf}}"`;
 /* eslint-enable */
