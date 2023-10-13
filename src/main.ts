@@ -6,6 +6,7 @@ import {
 	Plugin,
 	TFile,
 	Setting,
+	Platform,
 } from "obsidian";
 import {
 	StructuredPaperData,
@@ -38,14 +39,13 @@ import {
 	NOTICE_PAPER_NOTE_DOWNLOAD_ERROR,
 	NOTICE_DOWNLOADING_S2,
 } from "./constants";
-import { isValidUrl } from "./utility";
+import { isValidUrl, getSystemPathSeparator } from "./utility";
 import {
 	ObsidianScholarSettingTab,
 	ObsidianScholarPluginSettings,
 	DEFAULT_SETTINGS,
 } from "./settingsTab";
 import { ObsidianScholar } from "./obsidianScholar";
-import * as path from "path";
 
 // Main Plugin Entry Point
 export default class ObsidianScholarPlugin extends Plugin {
@@ -59,7 +59,7 @@ export default class ObsidianScholarPlugin extends Plugin {
 		this.obsidianScholar = new ObsidianScholar(
 			this.app,
 			this.settings,
-			path.sep
+			getSystemPathSeparator(),
 		);
 
 		this.addCommand({
@@ -191,7 +191,7 @@ export default class ObsidianScholarPlugin extends Plugin {
 			checkCallback: (checking: boolean) => {
 				const currentFile = this.app.workspace.getActiveFile();
 
-				if (!currentFile) {
+				if (!currentFile || !Platform.isMacOS) {
 					return false;
 				} else {
 					if (!checking) {
