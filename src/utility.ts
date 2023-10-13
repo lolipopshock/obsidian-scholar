@@ -1,3 +1,5 @@
+import {Platform} from "obsidian";
+
 export function getDate(input?: { format?: string; offset?: number }) {
 	let duration;
 
@@ -29,4 +31,8 @@ export function isValidUrl(s: string) {
 export function splitBibtex(bibtex:string): string[] | null {
     let regex = /(@.*?{[^@]*})/gs;
     return bibtex.match(regex);
+}
+
+export function getSystemPathSeparator(): string {
+	return Platform.isWin? "\\" : "/";
 }
