@@ -59,7 +59,7 @@ export default class ObsidianScholarPlugin extends Plugin {
 		this.obsidianScholar = new ObsidianScholar(
 			this.app,
 			this.settings,
-			getSystemPathSeparator(),
+			getSystemPathSeparator()
 		);
 
 		this.addCommand({
@@ -242,9 +242,6 @@ class paperSearchModal extends SuggestModal<PaperSearchModelResult> {
 	private settings: ObsidianScholarPluginSettings;
 	private obsidianScholar: ObsidianScholar;
 	private keyListener: KeyListener;
-	private lastSearchTime: number = 0;
-	private delayInMs: number = 250;
-	private lastSearch: string = "";
 	private lastSearchResults: PaperSearchModelResult[] = [];
 	private localPaperData: PaperSearchModelResult[] = [];
 
@@ -308,20 +305,7 @@ class paperSearchModal extends SuggestModal<PaperSearchModelResult> {
 		return results;
 	}
 
-	async searchSemanticScholarWithDelay(query: string) {
-		// Inspired by https://github.com/esm7/obsidian-map-view/blob/2b3be819067c2e2dd85418f61f8bd9a4f126ba7b/src/locationSearchDialog.ts#L149
-		if (query === this.lastSearch || query.length < 3) return;
-		const timestamp = Date.now();
-		this.lastSearchTime = timestamp;
-		const Sleep = (ms: number) =>
-			new Promise((resolve) => setTimeout(resolve, ms));
-		await Sleep(this.delayInMs);
-		if (this.lastSearchTime != timestamp) {
-			// Search is canceled by a newer search
-			return;
-		}
-		// After the sleep our search is still the last -- so the user stopped and we can go on
-		this.lastSearch = query;
+	async searchSemanticScholar(query: string) {
 		let searchResult: StructuredPaperData[] = [];
 		try {
 			searchResult = await searchSemanticScholar(query);
@@ -355,7 +339,7 @@ class paperSearchModal extends SuggestModal<PaperSearchModelResult> {
 				) as HTMLInputElement;
 
 				const query = inputEl.value;
-				await this.searchSemanticScholarWithDelay(query);
+				await this.searchSemanticScholar(query);
 			}
 
 			if (event.shiftKey && event.key === "Tab") {
@@ -391,10 +375,7 @@ class paperSearchModal extends SuggestModal<PaperSearchModelResult> {
 		let localResults = this.searchLocalPapers(query);
 		result = result.concat(localResults);
 
-		if (query == this.lastSearch) {
-			result = result.concat(this.lastSearchResults);
-		}
-		// console.log(result);
+		result = result.concat(this.lastSearchResults);
 		return result;
 	}
 
@@ -439,8 +420,9 @@ class paperSearchModal extends SuggestModal<PaperSearchModelResult> {
 		let allSelectedPaperIds: Number[] = [];
 
 		this.resultContainerEl.querySelectorAll(".is-added").forEach((el) => {
-			if (el.firstChild) {
-				let paperId = (el.firstChild as Element).getAttribute(
+			let titleEl = el.querySelector(".paper-search-result-title");
+			if (titleEl) {
+				let paperId = (titleEl as Element).getAttribute(
 					"data-paper-id"
 				);
 				if (paperId) {
@@ -449,7 +431,7 @@ class paperSearchModal extends SuggestModal<PaperSearchModelResult> {
 			}
 		});
 
-		// console.log(allSelectedPaperIds);
+		console.log(allSelectedPaperIds);
 
 		if (allSelectedPaperIds.length > 0) {
 			let papersToDownload = this.lastSearchResults.filter(
@@ -459,7 +441,7 @@ class paperSearchModal extends SuggestModal<PaperSearchModelResult> {
 					);
 				}
 			);
-			// console.log(papersToDownload);
+			console.log(papersToDownload);
 			papersToDownload.forEach((searchResult, index) => {
 				new Notice(
 					"Downloading paper " +
