@@ -7,7 +7,12 @@ import {
 	FileSystemAdapter,
 } from "obsidian";
 import { ObsidianScholarPluginSettings } from "./settingsTab";
-import { FILE_ALREADY_EXISTS, NOTE_TEMPLATE_DEFAULT } from "./constants";
+import {
+	FILE_ALREADY_EXISTS,
+	NOTE_FRONTMATTER_DEFAULT,
+	NOTE_FRONTMATTER_ALIASES,
+	NOTE_FRONTMATTER_ANNOTATION,
+} from "./constants";
 import { getDate, splitBibtex } from "./utility";
 import { StructuredPaperData } from "./paperData";
 import { exec } from "child_process";
@@ -151,7 +156,16 @@ export class ObsidianScholar {
 		if (templateFile != null && templateFile instanceof TFile) {
 			template = await this.app.vault.cachedRead(templateFile as TFile);
 		} else {
-			template = NOTE_TEMPLATE_DEFAULT;
+			template = "---\n";
+			template += NOTE_FRONTMATTER_DEFAULT;
+			if (this.settings.noteAddFrontmatterAliases) {
+				template += "\n" + NOTE_FRONTMATTER_ALIASES;
+			}
+			if (this.settings.noteAddFrontmatterAnnotation) {
+				template += "\n" + NOTE_FRONTMATTER_ANNOTATION;
+			}
+			template += "\n---\n\n";
+			console.log(template);
 		}
 
 		/* eslint-disable */
