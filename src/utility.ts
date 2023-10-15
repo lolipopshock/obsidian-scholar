@@ -16,6 +16,10 @@ export function getDate(input?: { format?: string; offset?: number }) {
 		: window.moment().add(duration).format("YYYY-MM-DD");
 }
 
+export function formatTimeString(input: string, format?: string) {
+	return format ? window.moment(input).format(format) : window.moment(input).format("YYYY-MM-DD");
+}
+
 export function trimString(str: string | null): string {
 	if (str == null) return "";
 

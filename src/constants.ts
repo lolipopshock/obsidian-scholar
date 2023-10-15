@@ -96,6 +96,7 @@ tags:
 url: "{{url}}"
 pdf: "{{pdf}}"
 citekey: "{{citekey}}"
+year: "{{publicationDate:YYYY}}"
 abstract: "{{abstract}}"`;
 
 export const NOTE_FRONTMATTER_ALIASES = `aliases: "@{{citekey}}"`;
