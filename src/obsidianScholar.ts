@@ -304,7 +304,7 @@ export class ObsidianScholar {
 			this.app.vault.adapter as FileSystemAdapter
 		).getFullPath(pdfPath);
 
-		exec(`open -a Preview "${absolutePath}"`, (error, stdout, stderr) => {
+		exec(`open "${absolutePath}"`, (error, stdout, stderr) => {
 			if (error) {
 				console.error(`exec error: ${error}`);
 				return;
