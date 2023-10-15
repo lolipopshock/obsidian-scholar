@@ -13,7 +13,7 @@ import {
 	NOTE_FRONTMATTER_ALIASES,
 	NOTE_FRONTMATTER_ANNOTATION,
 } from "./constants";
-import { getDate, splitBibtex } from "./utility";
+import { getDate, splitBibtex, formatTimeString } from "./utility";
 import { StructuredPaperData } from "./paperData";
 import { exec } from "child_process";
 
@@ -181,8 +181,11 @@ export class ObsidianScholar {
 		template = template.replace(/{{abstract}}/g, this.cleanStringForFrontmatter(paperData.abstract));
 		template = template.replace(/{{url}}/g, paperData.url ? this.cleanStringForFrontmatter(paperData.url) : "");
 		template = template.replace(/{{venue}}/g, paperData.venue ? this.cleanStringForFrontmatter(paperData.venue) : "");
-		template = template.replace(/{{publicationDate}}/g, paperData.publicationDate ? this.cleanStringForFrontmatter(paperData.publicationDate): "");
 		template = template.replace(/{{tags}}/g, (paperData?.tags && this.cleanStringForFrontmatter(paperData.tags.join(", "))) ?? "");
+
+		let publicationDate = paperData.publicationDate ? this.cleanStringForFrontmatter(paperData.publicationDate) : null;
+		template = template.replace(/{{publicationDate}}/g, publicationDate ? formatTimeString(publicationDate): "");
+		template = template.replace(/{{publicationDate:(.*?)}}/g, (_, format) => publicationDate ? formatTimeString(publicationDate, format): "");
 
 		// Replace for pdf file
 		template = template.replace(/{{pdf}}/g, paperData.pdfPath ? `[[${paperData.pdfPath}]]` : "");
