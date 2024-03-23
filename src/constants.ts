@@ -5,7 +5,7 @@ export const ARXIV_BIBTEX_API = "https://arxiv.org/bibtex/";
 export const ARXIV_REST_API = "https://export.arxiv.org/api/query?id_list=";
 export const ARXIV_URL_SUFFIX_ON_S2 = "arXiv:";
 export const ACL_ANTHOLOGY_URL_SUFFIX_ON_S2 = "ACL:";
-export const SEMANTIC_SCHOLAR_FIELDS = "fields=authors,title,abstract,url,venue,year,publicationDate,externalIds,isOpenAccess,openAccessPdf,citationStyles&limit=50";
+export const SEMANTIC_SCHOLAR_FIELDS = "fields=authors,title,abstract,url,venue,year,publicationDate,externalIds,isOpenAccess,openAccessPdf,citationStyles&limit=5";
 export const SEMANTIC_SCHOLAR_API = "https://api.semanticscholar.org/graph/v1/paper/";
 export const SEMANTIC_SCHOLAR_SEARCH_API = "https://api.semanticscholar.org/graph/v1/paper/search/?query=";
 export const SEMANTIC_SCHOLAR_REFERENCE_SEARCH_FIELDS = "/references?fields=authors,title,abstract,url,venue,year,publicationDate,externalIds,isOpenAccess,openAccessPdf,citationStyles&limit=50"

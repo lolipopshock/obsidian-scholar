@@ -140,7 +140,9 @@ function parseS2paperData(json: any) {
 }
 
 export async function fetchSemanticScholarPaperDataFromUrl(
-	url: string
+	url: string,
+	maxRetryCount = 3,
+	retryDelay = 2000,
 ): Promise<StructuredPaperData> {
 	let s2Id = getIdentifierFromUrl(url);
 
@@ -155,9 +157,23 @@ export async function fetchSemanticScholarPaperDataFromUrl(
 		throw new Error("Invalid url: " + url);
 	}
 
-	let s2Data = await request(
-		SEMANTIC_SCHOLAR_API + s2Id + "?" + SEMANTIC_SCHOLAR_FIELDS
-	);
+	let retryCount = 0;
+	async function makeRequest(url: string): Promise<any> {
+		try {
+			const response = await request(url);
+			return response;
+		} catch (error) {
+			if (retryCount < maxRetryCount) {
+				retryCount++;
+				await new Promise((resolve) => setTimeout(resolve, retryDelay));
+				return makeRequest(url);
+			} else {
+				throw new Error("Max retry count exceeded");
+			}
+		}
+	}
+
+	let s2Data = await makeRequest(SEMANTIC_SCHOLAR_API + s2Id + "?" + SEMANTIC_SCHOLAR_FIELDS);
 
 	let json = JSON.parse(s2Data);
 
