@@ -165,7 +165,7 @@ export class ObsidianScholar {
 				template += "\n" + NOTE_FRONTMATTER_ANNOTATION;
 			}
 			template += "\n---\n\n";
-			console.log(template);
+			// console.log(template);
 		}
 
 		/* eslint-disable */
@@ -300,6 +300,12 @@ export class ObsidianScholar {
 			pdfPath = currentFile.path;
 		} else {
 			new Notice("The current file is not a pdf or a note.");
+			return;
+		}
+
+		if (pdfPath === "" || !pdfPath) {
+			// handle cases where the pdf path is not found
+			new Notice("No pdf path found.");
 			return;
 		}
 
