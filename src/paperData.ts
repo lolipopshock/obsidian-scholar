@@ -10,6 +10,8 @@ import {
 } from "./constants";
 import { request } from "obsidian";
 import { trimString } from "./utility";
+import { backOff } from "exponential-backoff";
+import { Notice } from "obsidian";
 
 export interface StructuredPaperData {
 	title: string;
@@ -31,13 +33,38 @@ function getIdentifierFromUrl(url: string): string {
 	return url.split("/").slice(-1)[0];
 }
 
+async function makeRequestWithRetry(url: string): Promise<any> {
+	const makeRequest = async () => {
+		const response = await request(url);
+		return response;
+	};
+  
+	return backOff(makeRequest, {
+		startingDelay: 1000, // b/c the default is 1000ms according to the semanticscholar API
+		numOfAttempts: 5,
+		retry: (e) => {
+		  console.log(e);
+		  if (e.message.includes("429")) {
+			new Notice("Rate limit exceeded. Trying again.");
+			return true;
+		  } else if (e.message.includes("404")) {
+			new Notice("The paper cannot be found on SemanticScholar. Stop trying.");
+		  	return false;
+		  } else {
+			return true;
+		  }
+		},
+	  });
+  };
+
+  
 export function getCiteKeyFromBibtex(bibtex: string) {
 	const match = bibtex.match(/@.*\{([^,]+)/);
 	return match ? match[1] : null;
 }
 
 export async function fetchArxivBibtex(arxivId: string) {
-	const bibtex = await request(ARXIV_BIBTEX_API + arxivId);
+	const bibtex = await makeRequestWithRetry(ARXIV_BIBTEX_API + arxivId);
 	return bibtex;
 }
 
@@ -45,7 +72,7 @@ export async function fetchArxivPaperDataFromUrl(
 	url: string
 ): Promise<StructuredPaperData> {
 	const arxivId = getIdentifierFromUrl(url);
-	const arxivData = await request(ARXIV_REST_API + arxivId);
+	const arxivData = await makeRequestWithRetry(ARXIV_REST_API + arxivId);
 
 	const parser = new DOMParser();
 	const xmlDoc = parser.parseFromString(arxivData, "text/xml");
@@ -140,7 +167,9 @@ function parseS2paperData(json: any) {
 }
 
 export async function fetchSemanticScholarPaperDataFromUrl(
-	url: string
+	url: string,
+	maxRetryCount = 3,
+	retryDelay = 2000,
 ): Promise<StructuredPaperData> {
 	let s2Id = getIdentifierFromUrl(url);
 
@@ -155,9 +184,7 @@ export async function fetchSemanticScholarPaperDataFromUrl(
 		throw new Error("Invalid url: " + url);
 	}
 
-	let s2Data = await request(
-		SEMANTIC_SCHOLAR_API + s2Id + "?" + SEMANTIC_SCHOLAR_FIELDS
-	);
+	let s2Data = await makeRequestWithRetry(SEMANTIC_SCHOLAR_API + s2Id + "?" + SEMANTIC_SCHOLAR_FIELDS);
 
 	let json = JSON.parse(s2Data);
 
@@ -178,7 +205,7 @@ export async function searchSemanticScholar(
 
 	// console.log(requestUrl);
 
-	let s2Data = await request(requestUrl);
+	let s2Data = await makeRequestWithRetry(requestUrl);
 	// console.log(s2Data);
 
 	let json = JSON.parse(s2Data);
@@ -210,7 +237,7 @@ export async function fetchSemanticScholarPaperReferences(
 		throw new Error("Invalid url: " + url);
 	}
 
-	let s2Data = await request(
+	let s2Data = await makeRequestWithRetry(
 		SEMANTIC_SCHOLAR_API + s2Id + SEMANTIC_SCHOLAR_REFERENCE_SEARCH_FIELDS
 	);
 
