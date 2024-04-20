@@ -17,7 +17,7 @@
 
 ### Install from Obsidian Plugin Library 
 
-This plugin will be released upon the approval of the maintainers. See [this PR](https://github.com/obsidianmd/obsidian-releases/pull/2525).  
+This plugin is released on the Obsidian Plugin Library. You can install it directly from the Obsidian app [by searching `Scholar` in the community plugins](https://obsidian.md/plugins?search=scholar). 
 
 ### Manual Installation 
 
@@ -25,6 +25,15 @@ This plugin will be released upon the approval of the maintainers. See [this PR]
 2. Create a folder called `scholar` 
 3. Download the three files `manifest.json`, `styles.css`, and `main.js` from the [latest release](https://github.com/lolipopshock/obsidian-scholar/releases/latest), and put the files in the `.obsidian/plugins/scholar` folder you just created. 
 4. Open Obsidian and in `settings > community plugins`, find `Scholar` and enable the plugin. Be sure to change the `Scholar` settings properly before use. 
+
+## Documentation
+
+### Settings 
+
+![Settings](.github/demo/settings.png)
+
+- **Adding an SemanticScholar API Key**
+  Sometimes you might experience rate limiting when querying papers from SemanticScholar. To avoid this, you can add your own SemanticScholar API key in the settings. You can obtain the API Key [here](https://www.semanticscholar.org/product/api#api-key).
 
 ## Motivation and Acknowledgement 
 
