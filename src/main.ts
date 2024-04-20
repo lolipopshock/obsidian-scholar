@@ -308,7 +308,7 @@ class paperSearchModal extends SuggestModal<PaperSearchModelResult> {
 	async searchSemanticScholar(query: string) {
 		let searchResult: StructuredPaperData[] = [];
 		try {
-			searchResult = await searchSemanticScholar(query);
+			searchResult = await searchSemanticScholar(query, this.settings.s2apikey);
 		} catch (error) {
 			new Notice("Errors when downloading papers from Semanticscholar");
 			console.error(error);
@@ -1011,7 +1011,11 @@ class createNoteFromUrlModal extends Modal {
 			paperFetchFunction = fetchArxivPaperDataFromUrl;
 		} else {
 			new Notice(NOTICE_RETRIEVING_S2);
-			paperFetchFunction = fetchSemanticScholarPaperDataFromUrl;
+			paperFetchFunction = (url: string) =>
+				fetchSemanticScholarPaperDataFromUrl(
+					url,
+					this.settings.s2apikey
+				);
 		}
 		paperFetchFunction(url)
 			.then(async (paperData: StructuredPaperData) => {

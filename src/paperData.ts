@@ -8,7 +8,7 @@ import {
 	SEMANTIC_SCHOLAR_SEARCH_API,
 	SEMANTIC_SCHOLAR_REFERENCE_SEARCH_FIELDS,
 } from "./constants";
-import { request } from "obsidian";
+import { request, RequestUrlParam } from "obsidian";
 import { trimString } from "./utility";
 import { backOff } from "exponential-backoff";
 import { Notice } from "obsidian";
@@ -33,12 +33,16 @@ function getIdentifierFromUrl(url: string): string {
 	return url.split("/").slice(-1)[0];
 }
 
-async function makeRequestWithRetry(url: string): Promise<any> {
+async function makeRequestWithRetry(url: string, apiKey?: string): Promise<any> {
 	const makeRequest = async () => {
-		const response = await request(url);
+		const requestOptions: RequestUrlParam = {
+			url: url,
+			headers: apiKey && apiKey !== "" ? {'x-api-key': apiKey} : {},
+		};
+		const response = await request(requestOptions);
 		return response;
 	};
-  
+
 	return backOff(makeRequest, {
 		startingDelay: 1000, // b/c the default is 1000ms according to the semanticscholar API
 		numOfAttempts: 5,
@@ -168,6 +172,7 @@ function parseS2paperData(json: any) {
 
 export async function fetchSemanticScholarPaperDataFromUrl(
 	url: string,
+	apiKey?: string,
 	maxRetryCount = 3,
 	retryDelay = 2000,
 ): Promise<StructuredPaperData> {
@@ -184,7 +189,7 @@ export async function fetchSemanticScholarPaperDataFromUrl(
 		throw new Error("Invalid url: " + url);
 	}
 
-	let s2Data = await makeRequestWithRetry(SEMANTIC_SCHOLAR_API + s2Id + "?" + SEMANTIC_SCHOLAR_FIELDS);
+	let s2Data = await makeRequestWithRetry(SEMANTIC_SCHOLAR_API + s2Id + "?" + SEMANTIC_SCHOLAR_FIELDS, apiKey);
 
 	let json = JSON.parse(s2Data);
 
@@ -195,7 +200,8 @@ export async function fetchSemanticScholarPaperDataFromUrl(
 }
 
 export async function searchSemanticScholar(
-	query: string
+	query: string,
+	apiKey?: string
 ): Promise<StructuredPaperData[]> {
 	let requestUrl =
 		SEMANTIC_SCHOLAR_SEARCH_API +
@@ -205,7 +211,7 @@ export async function searchSemanticScholar(
 
 	// console.log(requestUrl);
 
-	let s2Data = await makeRequestWithRetry(requestUrl);
+	let s2Data = await makeRequestWithRetry(requestUrl, apiKey);
 	// console.log(s2Data);
 
 	let json = JSON.parse(s2Data);

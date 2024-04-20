@@ -21,6 +21,8 @@ import {
 	SETTING_FRONTMATTER_ADD_ALIASES_DESC,
 	SETTING_FRONTMATTER_ADD_ANNOTATION_NAME,
 	SETTING_FRONTMATTER_ADD_ANNOTATION_DESC,
+	SETTING_S2API_NAME,
+	SETTING_S2API_DESC,
 	NOTICE_NOT_BIB_FILE,
 	NOTICE_NO_BIB_FILE_SELECTED,
 } from "./constants";
@@ -38,6 +40,7 @@ export interface ObsidianScholarPluginSettings {
 	bibTexFileLocation: string;
 	noteAddFrontmatterAliases: boolean;
 	noteAddFrontmatterAnnotation: boolean;
+	s2apikey: string;
 }
 
 export const DEFAULT_SETTINGS: ObsidianScholarPluginSettings = {
@@ -50,6 +53,7 @@ export const DEFAULT_SETTINGS: ObsidianScholarPluginSettings = {
 	bibTexFileLocation: "",
 	noteAddFrontmatterAliases: false,
 	noteAddFrontmatterAnnotation: false,
+	s2apikey: "",
 };
 
 // Settings Tab
@@ -249,6 +253,23 @@ export class ObsidianScholarSettingTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.templateFileLocation)
 					.onChange(async (value) => {
 						this.plugin.settings.templateFileLocation = value;
+						await this.plugin.saveSettings();
+					})
+			);
+		new Setting(containerEl)
+			.setName(SETTING_S2API_NAME)
+			.setDesc(SETTING_S2API_DESC)
+			.addText((text) =>
+				text
+					.setPlaceholder("API key")
+					.setValue(this.plugin.settings.s2apikey || "")
+					.onChange(async (value) => {
+						// Check if it is a valid API key
+						if (!value || value.length !== 40) {
+							new Notice("Please enter a valid API key");
+							return;
+						}
+						this.plugin.settings.s2apikey = value;
 						await this.plugin.saveSettings();
 					})
 			);

@@ -74,6 +74,9 @@ export const SETTING_TEMPLATE_NAME = "Note Template";
 export const SETTING_TEMPLATE_DESC = "If set, we will use you own template for the paper note.";
 export const SETTING_TEMPLATE_FOLDER_DEFAULT = "template";
 
+export const SETTING_S2API_NAME = "Semantic Scholar API Key";
+export const SETTING_S2API_DESC = "Provide an Semantic Scholar API key can help you avoid rate limits when calling the API. You can obtain an API key from https://api.semanticscholar.org/.";
+
 // NOTICES 
 export const NOTICE_RETRIEVING_ARXIV = "Retrieving paper information from arXiv API.";
 export const NOTICE_RETRIEVING_S2 = "Retrieving paper information from Semantic Scholar API.";
