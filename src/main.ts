@@ -214,6 +214,22 @@ export default class ObsidianScholarPlugin extends Plugin {
 		// We want to be able to view bibtex files in obsidian
 		this.registerExtensions(["bib"], "markdown");
 		this.registerExtensions(["tex"], "markdown");
+
+		this.addRibbonIcon('library-big', 'Open Scholar Library', () => {
+			new paperSearchModal(
+				this.app,
+				this.settings,
+				this.obsidianScholar
+			).open();
+		});
+
+		this.addRibbonIcon('book-plus', 'Add to Scholar Library', () => {
+			new createNoteFromUrlModal(
+				this.app,
+				this.settings,
+				this.obsidianScholar
+			).open();
+		});
 	}
 
 	onunload() {}
