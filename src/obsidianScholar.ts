@@ -29,7 +29,12 @@ export class ObsidianScholar {
 	) {
 		this.app = app;
 		this.settings = settings;
-		this.pathSep = pathSep ? pathSep : "/";
+		this.pathSep =
+			settings.pathSeparator !== ""
+				? (this.pathSep = settings.pathSeparator)
+				: pathSep
+				? pathSep
+				: "/";
 	}
 
 	constructFileName(paperData: StructuredPaperData): string {
