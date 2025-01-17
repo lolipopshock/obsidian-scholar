@@ -46,11 +46,16 @@ import {
 	DEFAULT_SETTINGS,
 } from "./settingsTab";
 import { ObsidianScholar } from "./obsidianScholar";
+import { ObsidianScholarApi } from "./obsidianScholarApi";
 
 // Main Plugin Entry Point
 export default class ObsidianScholarPlugin extends Plugin {
 	settings: ObsidianScholarPluginSettings;
 	obsidianScholar: ObsidianScholar;
+
+	get api(): ReturnType<typeof ObsidianScholarApi.GetApi> {
+		return ObsidianScholarApi.GetApi(this.app, this, this.obsidianScholar);
+	}
 
 	async onload() {
 		// console.log("Loading ObsidianScholar Plugin.");
@@ -308,7 +313,10 @@ class paperSearchModal extends SuggestModal<PaperSearchModelResult> {
 	async searchSemanticScholar(query: string) {
 		let searchResult: StructuredPaperData[] = [];
 		try {
-			searchResult = await searchSemanticScholar(query, this.settings.s2apikey);
+			searchResult = await searchSemanticScholar(
+				query,
+				this.settings.s2apikey
+			);
 		} catch (error) {
 			new Notice("Errors when downloading papers from Semanticscholar");
 			console.error(error);
