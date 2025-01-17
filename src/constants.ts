@@ -59,6 +59,9 @@ export const SETTING_ADD_TO_BIB_FILE_NAME = "Save the BibTeX to";
 export const SETTING_ADD_TO_BIB_FILE_DESC = "Choose the .bib file to save the BibTeX to.";
 export const SETTING_ADD_TO_BIB_FILE_TARGET = "";
 
+export const SETTING_SYS_SEP = "System path separator";
+export const SETTING_SYS_SEP_DESC = "Used in the paper pdf path. Default is /; For Windows, use \\\\. Restart Obsidian after changing.";
+
 export const SETTING_NOTE_HEADER = "Note Settings";
 
 export const SETTING_FRONTMATTER_ADD_ALIASES_NAME = "Add aliases key in the note frontmatter?";

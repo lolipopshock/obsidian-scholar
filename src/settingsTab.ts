@@ -16,6 +16,8 @@ import {
 	SETTING_IS_ADD_TO_BIB_FILE_DESC,
 	SETTING_ADD_TO_BIB_FILE_NAME,
 	SETTING_ADD_TO_BIB_FILE_DESC,
+	SETTING_SYS_SEP,
+	SETTING_SYS_SEP_DESC,
 	SETTING_NOTE_HEADER,
 	SETTING_FRONTMATTER_ADD_ALIASES_NAME,
 	SETTING_FRONTMATTER_ADD_ALIASES_DESC,
@@ -41,6 +43,7 @@ export interface ObsidianScholarPluginSettings {
 	noteAddFrontmatterAliases: boolean;
 	noteAddFrontmatterAnnotation: boolean;
 	s2apikey: string;
+	pathSeparator: string;
 }
 
 export const DEFAULT_SETTINGS: ObsidianScholarPluginSettings = {
@@ -54,6 +57,7 @@ export const DEFAULT_SETTINGS: ObsidianScholarPluginSettings = {
 	noteAddFrontmatterAliases: false,
 	noteAddFrontmatterAnnotation: false,
 	s2apikey: "",
+	pathSeparator: "",
 };
 
 // Settings Tab
@@ -209,6 +213,19 @@ export class ObsidianScholarSettingTab extends PluginSettingTab {
 						})
 				);
 		}
+
+		new Setting(containerEl)
+			.setName(SETTING_SYS_SEP)
+			.setDesc(SETTING_SYS_SEP_DESC)
+			.addText((text) =>
+				text
+					.setPlaceholder("System path separator")
+					.setValue(this.plugin.settings.pathSeparator)
+					.onChange(async (value) => {
+						this.plugin.settings.pathSeparator = value;
+						await this.plugin.saveSettings();
+					})
+			);
 
 		containerEl.createEl("h2", { text: SETTING_NOTE_HEADER });
 
