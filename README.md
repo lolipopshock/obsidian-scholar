@@ -15,6 +15,8 @@ You can quickly search and retrieve the papers in your library, as well as optio
 
 https://github.com/user-attachments/assets/55470ce5-5081-4bcd-b033-a762bacd8c2d
 
+1. When you select between papers, you can hit `Tab` to show and hide the paper abstract. 
+2. If you want to use SemanticScholar to search the paper, you can hit `shift + enter` 
 
 ### Enhanced Paper Reading 
 
@@ -33,10 +35,16 @@ https://github.com/user-attachments/assets/10668d77-e681-4c68-9147-38a83a30cfa5
 
 https://github.com/user-attachments/assets/4b4681d8-6f8e-4e8f-b16a-7e8e8c21934e
 
-When you have a paper PDF it can display the citation information directly inplace. Optionally it allows for checking the paper in the obsidian scholar ecosystem. 
+When you have a paper PDF it can display the citation information directly in-place. It allows for checking the paper in the obsidian scholar ecosystem. 
 
 > [!Note]
 > This is used in conjunction with the amazing PDF Reader plugin tool [Obsidian PDF++](https://github.com/RyotaUshio/obsidian-pdf-plus). Right now I am trying to add the PR into their repo (track the status [here](https://github.com/RyotaUshio/obsidian-pdf-plus/pull/463)); for now you can install the plugin on your own https://github.com/lolipopshock/obsidian-pdf-plus/tree/add-scholar-support. 
+
+##### Note-taking with Obsidian PDF++
+
+https://github.com/user-attachments/assets/06f3f2e7-9a33-45c3-bb82-afd7f8ed36fb
+
+By enabling auto-paste in Obsidian PDF++, the note will be automatically synced to the corresponding scholar note file for a paper PDF.
 
 ## Installation 
 
