@@ -69,14 +69,25 @@ export class ObsidianScholar {
 		};
 	}
 
-	detachAllUnpinnedLeaves() {
-		// Reference: https://github.com/hdykokd/obsidian-advanced-close-tab/blob/76fefd6dea37cc9ee6ae6daf50850ba80f2f27d2/src/main.ts#L87
+	async detachAllUnpinnedLeaves() {
+		// Get all unpinned leaves first to avoid modifying collection while iterating
+		const leavesToDetach: any[] = [];
 		this.app.workspace.iterateRootLeaves((leaf) => {
-			if (leaf.getViewState().state.pinned) return;
-			sleep(0).then(() => {
-				leaf.detach();
-			});
+			if (!leaf.getViewState().state.pinned) {
+				leavesToDetach.push(leaf);
+			}
 		});
+
+		// Detach leaves sequentially to avoid state conflicts
+		for (const leaf of leavesToDetach) {
+			try {
+				leaf.detach();
+				// Small delay to let workspace settle
+				await new Promise(resolve => setTimeout(resolve, 10));
+			} catch (error) {
+				console.log("Error detaching leaf:", error);
+			}
+		}
 	}
 
 	async getAllLocalPaperData(): Promise<StructuredPaperData[]> {
@@ -341,7 +352,7 @@ export class ObsidianScholar {
 		// When we want to open the pdf, we'd better close all the windows
 		// in the current workspace
 		if (this.settings.openPdfAfterDownload && paperData.pdfPath) {
-			this.detachAllUnpinnedLeaves();
+			await this.detachAllUnpinnedLeaves();
 		}
 
 		//notification if the file already exists
@@ -364,20 +375,44 @@ export class ObsidianScholar {
 		}
 	}
 
-	async openPaper(pathToFile: string, paperData: StructuredPaperData) {
-		if (this.settings.openPdfAfterDownload) {
-			this.detachAllUnpinnedLeaves();
+	async openPaper(pathToFile: string, paperData: StructuredPaperData, shouldOpenPdf?: boolean) {
+		// Use the provided parameter or fall back to the existing setting
+		const openPdf = shouldOpenPdf !== undefined ? shouldOpenPdf : this.settings.openPdfAfterDownload;
+		
+		// Only detach leaves if the setting is enabled for downloads, not for updates	
+		if (shouldOpenPdf === undefined && this.settings.openPdfAfterDownload) {
+			await this.detachAllUnpinnedLeaves();
+		}
+		
+		this.app.workspace.openLinkText(pathToFile, pathToFile);
+		
+		if (openPdf && paperData.pdfPath) {
 
-			this.app.workspace.openLinkText(pathToFile, pathToFile, true);
-			let leaf = this.app.workspace.getLeaf("split", "vertical");
-			paperData.pdfPath &&
-				leaf.openFile(
-					this.app.vault.getAbstractFileByPath(
-						paperData.pdfPath
-					) as TFile
-				);
-		} else {
-			this.app.workspace.openLinkText(pathToFile, pathToFile);
+			// Open the note file first
+			const noteFile = this.app.vault.getAbstractFileByPath(pathToFile);
+			if (noteFile && noteFile instanceof TFile) {
+
+				// Wait for the workspace to settle
+				await new Promise(resolve => setTimeout(resolve, 150));
+				
+				// Now try to open the PDF in a split
+				try {
+					const pdfFile = this.app.vault.getAbstractFileByPath(paperData.pdfPath);
+					if (pdfFile && pdfFile instanceof TFile) {
+						// Create split from the note leaf
+						const pdfLeaf = this.app.workspace.getLeaf("split", "vertical");
+						await pdfLeaf.openFile(pdfFile);
+					}
+				} catch (error) {
+					console.log("Could not open PDF in split, opening in same pane:", error);
+					// Fallback: just open the PDF in the current leaf if split fails
+					const pdfFile = this.app.vault.getAbstractFileByPath(paperData.pdfPath);
+					if (pdfFile && pdfFile instanceof TFile) {
+						const fallbackLeaf = this.app.workspace.getLeaf(true);
+						await fallbackLeaf.openFile(pdfFile);
+					}
+				}
+			}
 		}
 	}
 
@@ -728,7 +763,6 @@ export class ObsidianScholar {
 				if (this.settings.overridePdfs) {
 					// Remove existing PDF
 					await this.removeExistingPdf(paperData.pdfPath);
-					console.log("Existing PDF removed.");
 				} else {
 					// Create backup of existing PDF
 					await this.createPdfBackup(paperData.pdfPath);
@@ -747,6 +781,14 @@ export class ObsidianScholar {
 
 			// Update the note's frontmatter
 			await this.updateNotePdfPath(notePath, pdfPath);
+
+			// Get updated paper data with new PDF path
+			const updatedPaperData = this.getPaperDataFromLocalFile(noteFile);
+			
+			// Use the openPaper function to handle opening the note and PDF
+			if (this.settings.openPdfAfterUpdate) {
+				await this.openPaper(notePath, updatedPaperData, true);
+			}
 			
 		} catch (error) {
 			new Notice("Failed to add PDF to paper: " + error);

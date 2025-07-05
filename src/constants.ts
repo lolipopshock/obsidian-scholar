@@ -86,6 +86,9 @@ export const SETTING_S2API_DESC = "Provide an Semantic Scholar API key can help 
 export const SETTING_PDF_OVERRIDE_NAME = "Override existing PDFs";
 export const SETTING_PDF_OVERRIDE_DESC = "If enabled, adding a new PDF will replace the existing one. If disabled, the existing PDF will be renamed as a backup with timestamp.";
 
+export const SETTING_OPEN_PDF_AFTER_UPDATE_NAME = "Open PDF after update";
+export const SETTING_OPEN_PDF_AFTER_UPDATE_DESC = "If enabled, the PDF will be opened automatically after adding it to a paper.";
+
 // NOTICES 
 export const NOTICE_RETRIEVING_ARXIV = "Retrieving paper information from arXiv API.";
 export const NOTICE_RETRIEVING_S2 = "Retrieving paper information from Semantic Scholar API.";
