@@ -37,6 +37,7 @@ export interface PaperLibrarySearchParams {
 	url?: string;
 	title?: string;
 	citekey?: string;
+	bibstring?: string;
 }
 
 function getIdentifierFromUrl(url: string): string {

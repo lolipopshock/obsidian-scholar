@@ -13,7 +13,7 @@ import {
 	NOTE_FRONTMATTER_ALIASES,
 	NOTE_FRONTMATTER_ANNOTATION,
 } from "./constants";
-import { getDate, splitBibtex, formatTimeString } from "./utility";
+import { getDate, splitBibtex, formatTimeString, parseBibString } from "./utility";
 import { StructuredPaperData, PaperLibraryCheckResult, PaperLibrarySearchParams } from "./paperData";
 import { exec } from "child_process";
 
@@ -131,9 +131,25 @@ export class ObsidianScholar {
 
 	async isPaperInLibrary(searchParams: PaperLibrarySearchParams): Promise<PaperLibraryCheckResult> {
 		// Input validation - at least one parameter must be provided
-		const { url, title, citekey } = searchParams;
-		if (!url && !title && !citekey) {
+		let { url, title, citekey, bibstring } = searchParams;
+		if (!url && !title && !citekey && !bibstring) {
 			throw new Error("At least one search parameter (url, title, or citekey) must be provided");
+		}
+
+		// Parse bibstring if provided to extract additional search parameters
+		if (bibstring) {
+			const parsedBib = parseBibString(bibstring);
+			
+			// Use parsed values if original parameters weren't provided
+			if (!url && parsedBib.arxivUrl) {
+				url = parsedBib.arxivUrl;
+			}
+			if (!url && parsedBib.url) {
+				url = parsedBib.url;
+			}
+			if (!title && parsedBib.title) {
+				title = parsedBib.title;
+			}
 		}
 
 		const allPapersWithFiles = this.app.vault

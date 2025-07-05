@@ -54,7 +54,7 @@ export default class ObsidianScholarPlugin extends Plugin {
 	obsidianScholar: ObsidianScholar;
 
 	get api(): ReturnType<typeof ObsidianScholarApi.GetApi> {
-		return ObsidianScholarApi.GetApi(this.app, this, this.obsidianScholar);
+		return ObsidianScholarApi.GetApi(this.app, this, this.obsidianScholar, paperSearchModal);
 	}
 
 	async onload() {
@@ -265,11 +265,13 @@ class paperSearchModal extends SuggestModal<PaperSearchModelResult> {
 	private keyListener: KeyListener;
 	private lastSearchResults: PaperSearchModelResult[] = [];
 	private localPaperData: PaperSearchModelResult[] = [];
+	private initialQuery?: string;
 
 	constructor(
 		app: App,
 		settings: ObsidianScholarPluginSettings,
-		obsidianScholar: ObsidianScholar
+		obsidianScholar: ObsidianScholar,
+		initialQuery?: string
 	) {
 		super(app);
 		this.settings = settings;
@@ -311,6 +313,11 @@ class paperSearchModal extends SuggestModal<PaperSearchModelResult> {
 					paperIndex: index,
 				};
 			}); // We need to store the filepath as well
+
+		// Store the initial query for later use
+		if (initialQuery) {
+			this.initialQuery = initialQuery;
+		}
 	}
 
 	searchLocalPapers(query: string): PaperSearchModelResult[] {
@@ -387,6 +394,18 @@ class paperSearchModal extends SuggestModal<PaperSearchModelResult> {
 		};
 		document.addEventListener("keydown", this.keyListener);
 		super.onOpen();
+
+		// Set initial query if provided
+		if (this.initialQuery) {
+			const inputEl = document.querySelector(
+				".prompt-input"
+			) as HTMLInputElement;
+			if (inputEl) {
+				inputEl.value = this.initialQuery;
+				// Trigger search immediately
+				this.searchSemanticScholar(this.initialQuery);
+			}
+		}
 	}
 
 	getSuggestions(query: string): PaperSearchModelResult[] {
