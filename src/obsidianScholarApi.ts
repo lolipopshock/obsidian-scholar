@@ -7,6 +7,8 @@ import {
 	StructuredPaperData,
 	fetchArxivPaperDataFromUrl,
 	fetchSemanticScholarPaperDataFromUrl,
+	PaperLibraryCheckResult,
+	PaperLibrarySearchParams,
 } from "./paperData";
 
 export class ObsidianScholarApi {
@@ -19,6 +21,17 @@ export class ObsidianScholarApi {
 			// Paper creation and management
 			createPaperNoteFromUrl: async (url: string) => {
 				return this.createPaperNoteFromUrl(app, plugin, scholar, url);
+			},
+			// Paper library checking
+			isPaperInLibrary: async (searchParams: PaperLibrarySearchParams): Promise<PaperLibraryCheckResult> => {
+				return scholar.isPaperInLibrary(searchParams);
+			},
+			// Convenience method for URL-only searches
+			findPaperByUrl: async (url: string): Promise<PaperLibraryCheckResult> => {
+				if (!isValidUrl(url)) {
+					throw new Error("Invalid URL");
+				}
+				return scholar.isPaperInLibrary({ url });
 			},
 		};
 	}
