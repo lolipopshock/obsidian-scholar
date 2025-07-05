@@ -2,16 +2,49 @@
 
 ## Usage  
 
-### Key Features
+### Streamlined Library Management
 
-| Stage | Function | 
-| --- | --- |
-| | 📚 Streamline Library Management | 
-| **Add Paper from External Link** | Upon seeing a paper on the web (Slack, Twitter, etc.), you can add the paper to your local library: running this tool can download the paper PDF, and create the corresponding paper note with paper metadata. <br/> ![01-add-paper.gif](.github/demo/01-add-paper.gif) |
-| **Search and Retrieval** | You can quickly search and retrieve the papers in your library, as well as optionally query and find papers from SemanticScholar directly if they are not in your library. <br/> ![02-search-paper.gif](.github/demo/02-search-paper.gif) |
-| | ✨ Enhance Paper Reading | 
-| **Check Paper Reference** |  Obsidian Scholar allows you checking the details of the referred papers without leaving the tool. <br/> ![03-search-paper.gif](.github/demo/03-check-paper-reference.gif) |
-| **Copy Paper BibTex** | ![04-copy-bibtex.gif](.github/demo/04-copy-bibtex.gif) |
+#### Add Paper from External Link
+Upon seeing a paper on the web (Slack, Twitter, etc.), you can add the paper to your local library: running this tool can download the paper PDF, and create the corresponding paper note with paper metadata.
+
+https://github.com/user-attachments/assets/792f4612-5bbf-4885-9e04-24ece50e6729
+
+
+#### Search and Retrieval
+You can quickly search and retrieve the papers in your library, as well as optionally query and find papers from SemanticScholar directly if they are not in your library.
+
+https://github.com/user-attachments/assets/55470ce5-5081-4bcd-b033-a762bacd8c2d
+
+1. When you select between papers, you can hit `Tab` to show and hide the paper abstract. 
+2. If you want to use SemanticScholar to search the paper, you can hit `shift + enter` 
+
+### Enhanced Paper Reading 
+
+#### Check Paper Reference
+Obsidian Scholar allows you checking the details of the referred papers without leaving the tool. 
+
+https://github.com/user-attachments/assets/95f6749c-dd54-4c98-a2d3-18ae5e08fe05
+
+
+#### Copy Paper BibTex
+
+https://github.com/user-attachments/assets/10668d77-e681-4c68-9147-38a83a30cfa5
+
+
+#### Google-Scholar PDF reader like popover and library management 
+
+https://github.com/user-attachments/assets/4b4681d8-6f8e-4e8f-b16a-7e8e8c21934e
+
+When you have a paper PDF it can display the citation information directly in-place. It allows for checking the paper in the obsidian scholar ecosystem. 
+
+> [!Note]
+> This is used in conjunction with the amazing PDF Reader plugin tool [Obsidian PDF++](https://github.com/RyotaUshio/obsidian-pdf-plus). Right now I am trying to add the PR into their repo (track the status [here](https://github.com/RyotaUshio/obsidian-pdf-plus/pull/463)); for now you can install the plugin on your own https://github.com/lolipopshock/obsidian-pdf-plus/tree/add-scholar-support. 
+
+##### Note-taking with Obsidian PDF++
+
+https://github.com/user-attachments/assets/06f3f2e7-9a33-45c3-bb82-afd7f8ed36fb
+
+By enabling auto-paste in Obsidian PDF++, the note will be automatically synced to the corresponding scholar note file for a paper PDF.
 
 ## Installation 
 
