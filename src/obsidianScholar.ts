@@ -114,7 +114,7 @@ export class ObsidianScholar {
 		const matchingWords = searchWords.filter(word => 
 			paperWords.some(pWord => pWord.includes(word))
 		);
-		return matchingWords.length / paperWords.length >= 0.85;
+		return matchingWords.length / searchWords.length >= 0.85;
 	}
 
 	private fuzzyAuthorMatch(paperAuthors: string[], searchAuthors: string): boolean {
@@ -139,7 +139,6 @@ export class ObsidianScholar {
 		// Parse bibstring if provided to extract additional search parameters
 		if (bibstring) {
 			const parsedBib = parseBibString(bibstring);
-			
 			// Use parsed values if original parameters weren't provided
 			if (!url && parsedBib.arxivUrl) {
 				url = parsedBib.arxivUrl;
