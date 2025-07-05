@@ -27,6 +27,19 @@ export interface StructuredPaperData {
 	citekey?: string | null;
 }
 
+export interface PaperLibraryCheckResult {
+	isInLibrary: boolean;
+	filePath?: string;
+	paperData?: StructuredPaperData;
+}
+
+export interface PaperLibrarySearchParams {
+	url?: string;
+	title?: string;
+	citekey?: string;
+	bibstring?: string;
+}
+
 function getIdentifierFromUrl(url: string): string {
 	//if url ends in / remove it
 	if (url.endsWith("/")) url = url.slice(0, -1);

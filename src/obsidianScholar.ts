@@ -13,8 +13,8 @@ import {
 	NOTE_FRONTMATTER_ALIASES,
 	NOTE_FRONTMATTER_ANNOTATION,
 } from "./constants";
-import { getDate, splitBibtex, formatTimeString } from "./utility";
-import { StructuredPaperData } from "./paperData";
+import { getDate, splitBibtex, formatTimeString, parseBibString } from "./utility";
+import { StructuredPaperData, PaperLibraryCheckResult, PaperLibrarySearchParams } from "./paperData";
 import { exec } from "child_process";
 
 export class ObsidianScholar {
@@ -86,6 +86,136 @@ export class ObsidianScholar {
 			.map((file) => {
 				return this.getPaperDataFromLocalFile(file);
 			});
+	}
+
+	private normalizeSearchString(str: string): string {
+		return str.toLowerCase().trim().replace(/[^\w\s]/g, '').replace(/\s+/g, ' ');
+	}
+
+	private fuzzyTitleMatch(paperTitle: string, searchTitle: string): boolean {
+		const normalizedPaperTitle = this.normalizeSearchString(paperTitle);
+		const normalizedSearchTitle = this.normalizeSearchString(searchTitle);
+		
+		// Exact match
+		if (normalizedPaperTitle === normalizedSearchTitle) {
+			return true;
+		}
+		
+		// Partial match - search title contained in paper title
+		if (normalizedPaperTitle.includes(normalizedSearchTitle)) {
+			return true;
+		}
+		
+		// Split into words and check if most words match
+		const paperWords = normalizedPaperTitle.split(' ');
+		const searchWords = normalizedSearchTitle.split(' ');
+		
+		// For longer searches, require at least 70% of words to match
+		const matchingWords = searchWords.filter(word => 
+			paperWords.some(pWord => pWord.includes(word))
+		);
+		return matchingWords.length / searchWords.length >= 0.85;
+	}
+
+	private fuzzyAuthorMatch(paperAuthors: string[], searchAuthors: string): boolean {
+		const normalizedSearchAuthors = this.normalizeSearchString(searchAuthors);
+		const searchAuthorWords = normalizedSearchAuthors.split(' ');
+		
+		return paperAuthors.some(author => {
+			const normalizedAuthor = this.normalizeSearchString(author);
+			return searchAuthorWords.some(searchWord => 
+				normalizedAuthor.includes(searchWord) && searchWord.length > 2
+			);
+		});
+	}
+
+	async isPaperInLibrary(searchParams: PaperLibrarySearchParams): Promise<PaperLibraryCheckResult> {
+		// Input validation - at least one parameter must be provided
+		let { url, title, citekey, bibstring } = searchParams;
+		if (!url && !title && !citekey && !bibstring) {
+			throw new Error("At least one search parameter (url, title, or citekey) must be provided");
+		}
+
+		// Parse bibstring if provided to extract additional search parameters
+		if (bibstring) {
+			const parsedBib = parseBibString(bibstring);
+			// Use parsed values if original parameters weren't provided
+			if (!url && parsedBib.arxivUrl) {
+				url = parsedBib.arxivUrl;
+			}
+			if (!url && parsedBib.url) {
+				url = parsedBib.url;
+			}
+			if (!title && parsedBib.title) {
+				title = parsedBib.title;
+			}
+		}
+
+		const allPapersWithFiles = this.app.vault
+			.getMarkdownFiles()
+			.filter((file) => file.path.startsWith(this.settings.NoteLocation))
+			.map((file) => ({
+				paperData: this.getPaperDataFromLocalFile(file),
+				file: file,
+			}));
+
+		// 1. Search by URL first (most reliable)
+		if (url) {
+			const normalizedUrl = url.toLowerCase().trim();
+			for (const { paperData, file } of allPapersWithFiles) {
+				if (paperData.url && paperData.url.toLowerCase().trim() === normalizedUrl) {
+					return {
+						isInLibrary: true,
+						filePath: file.path,
+						paperData: paperData
+					};
+				}
+			}
+		}
+
+		// 2. Search by citekey (also quite reliable)
+		if (citekey) {
+			const normalizedCitekey = citekey.toLowerCase().trim();
+			for (const { paperData, file } of allPapersWithFiles) {
+				if (paperData.citekey && paperData.citekey.toLowerCase().trim() === normalizedCitekey) {
+					return {
+						isInLibrary: true,
+						filePath: file.path,
+						paperData: paperData
+					};
+				}
+			}
+		}
+
+		// 3. Fuzzy search by title
+		if (title) {
+			for (const { paperData, file } of allPapersWithFiles) {
+				if (paperData.title && this.fuzzyTitleMatch(paperData.title, title)) {
+					return {
+						isInLibrary: true,
+						filePath: file.path,
+						paperData: paperData
+					};
+				}
+			}
+		}
+
+		// 4. Fuzzy search by authors
+		// 
+		// if (authors) {
+		// 	for (const { paperData, file } of allPapersWithFiles) {
+		// 		if (paperData.authors && paperData.authors.length > 0 && 
+		// 			this.fuzzyAuthorMatch(paperData.authors, authors)) {
+		// 			return {
+		// 				isInLibrary: true,
+		// 				filePath: file.path,
+		// 				paperData: paperData
+		// 			};
+		// 		}
+		// 	}
+		// }
+
+		return { isInLibrary: false };
 	}
 
 	isFileInNoteLocation(file: TFile | string): boolean {

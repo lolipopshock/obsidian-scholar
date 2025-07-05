@@ -54,3 +54,116 @@ Also thanks the following people for their excellent blogposts and tutorials ill
 - [Managing ArXiv RSS Feeds in Emacs](https://cundy.me/post/elfeed/) by [Chris Cundy](https://cundy.me)
 
 Some of the code is based on a previous project called [paper-note-filer](https://github.com/chauff/paper-note-filler) by [Claudia Hauff](https://chauff.github.io). 
+
+
+## API Documentation
+
+The Scholar plugin exposes a JavaScript API that can be used by other plugins or through Obsidian URIs. Access the API through `this.app.plugins.plugins.scholar.api`.
+
+### Available Methods
+
+#### `createPaperNoteFromUrl(url: string)`
+Creates a paper note from a URL. Supports ArXiv and SemanticScholar URLs.
+
+**Parameters:**
+- `url` (string): The URL of the paper to create a note from
+
+**Returns:** `Promise<void>`
+
+**Example:**
+```javascript
+await this.app.plugins.plugins.scholar.api.createPaperNoteFromUrl("https://arxiv.org/abs/1706.03762");
+```
+
+#### `isPaperInLibrary(searchParams: PaperLibrarySearchParams)`
+Checks if a paper exists in your library and returns detailed information about it.
+
+**Parameters:**
+- `searchParams` (object): Search parameters with the following optional fields:
+  - `url?: string` - Paper URL
+  - `title?: string` - Paper title
+  - `citekey?: string` - BibTeX cite key
+  - `bibstring?: string` - BibTeX string
+
+**Returns:** `Promise<PaperLibraryCheckResult>`
+- `isInLibrary: boolean` - Whether the paper exists in your library
+- `filePath?: string` - Path to the paper note file (if found)
+- `paperData?: StructuredPaperData` - Complete paper metadata (if found)
+
+**Example:**
+```javascript
+// Search by title
+const result = await this.app.plugins.plugins.scholar.api.isPaperInLibrary({
+    title: "Attention Is All You Need"
+});
+
+// Search by URL
+const result = await this.app.plugins.plugins.scholar.api.isPaperInLibrary({
+    url: "https://arxiv.org/abs/1706.03762"
+});
+
+// Search by citekey
+const result = await this.app.plugins.plugins.scholar.api.isPaperInLibrary({
+    citekey: "vaswani2017attention"
+});
+```
+
+#### `openPaper(searchParams: OpenPaperParams)`
+Opens the paper search modal with pre-filled query or creates a paper note directly from URL.
+
+**Parameters:**
+- `searchParams` (object): Search parameters with the following optional fields:
+  - `title?: string` - Paper title to search for
+  - `bibstring?: string` - BibTeX string to parse
+  - `url?: string` - Paper URL to create note from directly
+
+**Returns:** `Promise<void>`
+
+**Example:**
+```javascript
+// Open search modal with title
+await this.app.plugins.plugins.scholar.api.openPaper({
+    title: "attention is all you need"
+});
+
+// Create paper note from URL
+await this.app.plugins.plugins.scholar.api.openPaper({
+    url: "https://arxiv.org/abs/1706.03762"
+});
+
+// Parse BibTeX and open appropriate action
+await this.app.plugins.plugins.scholar.api.openPaper({
+    bibstring: "Tom B Brown, Benjamin Mann, Nick Ryder, Melanie Subbiah, Jared Kaplan, Prafulla Dhariwal, Arvind Neelakantan, Pranav Shyam, Girish Sastry, Amanda Askell, et al. 2020. Language models"
+});
+```
+
+### Quick Testing with Obsidian URIs
+
+You can test the API directly through Obsidian URIs. Copy and paste these URLs into your browser (while Obsidian is running) to test the functionality:
+
+**Test if a paper is in your library by title:**
+```
+obsidian://adv-uri?eval=this.app.plugins.plugins.scholar.api.isPaperInLibrary%28%7Btitle%3A%22attention%20transformer%22%7D%29.then%28result%20%3D%3E%20console.log%28result%29%29
+```
+
+**Test if a paper is in your library by URL:**
+```
+obsidian://adv-uri?eval=this.app.plugins.plugins.scholar.api.isPaperInLibrary%28%7Burl%3A%22https%3A%2F%2Farxiv.org%2Fabs%2F1706.03762%22%7D%29.then%28result%20%3D%3E%20console.log%28result%29%29
+```
+
+**Create a paper note from ArXiv URL:**
+```
+obsidian://adv-uri?eval=this.app.plugins.plugins.scholar.api.createPaperNoteFromUrl%28%22https%3A%2F%2Farxiv.org%2Fabs%2F1706.03762%22%29.then%28%28%29%20%3D%3E%20console.log%28%22Paper%20created%22%29%29
+```
+
+**Open search modal with pre-filled title:**
+```
+obsidian://adv-uri?eval=this.app.plugins.plugins.scholar.api.openPaper%28%7Btitle%3A%22attention%20is%20all%20you%20need%22%7D%29.then%28%28%29%20%3D%3E%20console.log%28%22Modal%20opened%22%29%29
+```
+
+**Test with BibTeX string:**
+```
+obsidian://adv-uri?eval=this.app.plugins.plugins.scholar.api.openPaper%28%7Bbibstring%3A%22Tom%20B%20Brown%2C%20Benjamin%20Mann%2C%20Nick%20Ryder%2C%20Melanie%20Subbiah%2C%20Jared%20Kaplan%2C%20Prafulla%20Dhariwal%2C%20Arvind%20Neelakantan%2C%20Pranav%20Shyam%2C%20Girish%20Sastry%2C%20Amanda%20Askell%2C%20et%20al.%202020.%20Language%20models%22%7D%29.then%28%28%29%20%3D%3E%20console.log%28%22Action%20completed%22%29%29
+```
+
+> **Note:** The URI examples above require the [Advanced URI plugin](https://github.com/Vinzent03/obsidian-advanced-uri) to be installed and enabled. 
