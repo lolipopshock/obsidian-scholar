@@ -1242,11 +1242,19 @@ class pdfPathInputModal extends SuggestModal<string> {
 			modalInstructionHTML.createSpan({ text: instruction[1] });
 		}
 
-		// Set placeholder based on existing PDF
+		// Set placeholder based on existing PDF and platform
 		if (this.existingPdfPath) {
-			this.setPlaceholder("Enter PDF URL or path (current PDF shown in suggestions)");
+			if (Platform.isDesktop) {
+				this.setPlaceholder("Enter PDF URL or path (current PDF shown in suggestions)");
+			} else {
+				this.setPlaceholder("Enter PDF URL (local files not supported on mobile)");
+			}
 		} else {
-			this.setPlaceholder("Enter PDF URL or local file path");
+			if (Platform.isDesktop) {
+				this.setPlaceholder("Enter PDF URL or local file path");
+			} else {
+				this.setPlaceholder("Enter PDF URL (local files not supported on mobile)");
+			}
 		}
 
 		// Add description
@@ -1259,9 +1267,15 @@ class pdfPathInputModal extends SuggestModal<string> {
 			const behaviorText = this.settings.overridePdfs 
 				? "The existing PDF will be replaced." 
 				: "The existing PDF will be backed up with a timestamp.";
-			descEl.setText(`Adding PDF to "${this.paperTitle}". ${behaviorText}`);
+			let platformNote = Platform.isDesktop 
+				? "" 
+				: " Note: Local file copying is only available on desktop.";
+			descEl.setText(`Adding PDF to "${this.paperTitle}". ${behaviorText}${platformNote}`);
 		} else {
-			descEl.setText(`Adding PDF to "${this.paperTitle}". Enter a URL to download or local path to copy.`);
+			let platformNote = Platform.isDesktop 
+				? "Enter a URL to download or local path to copy." 
+				: "Enter a URL to download. Local files are not supported on mobile.";
+			descEl.setText(`Adding PDF to "${this.paperTitle}". ${platformNote}`);
 		}
 	}
 
@@ -1298,6 +1312,39 @@ class pdfPathInputModal extends SuggestModal<string> {
 			}
 		}
 
+		// Only add local path suggestions on desktop platforms
+		if (Platform.isDesktop) {
+			// Add local file path suggestions if query looks like a local path
+			if (query.startsWith("/") || query.startsWith("./") || query.startsWith("~/")) {
+				const commonPaths = [
+					"~/Downloads/",
+					"~/Documents/",
+					"~/Desktop/",
+				];
+				
+				for (const path of commonPaths) {
+					if (path.startsWith(query) && !suggestions.includes(path)) {
+						suggestions.push(path);
+					}
+				}
+			}
+
+			// Add Windows drive letter suggestions
+			if (query.match(/^[A-Za-z]:/) && Platform.isWin) {
+				const commonWinPaths = [
+					"C:\\Users\\",
+					"C:\\Downloads\\",
+					"D:\\",
+				];
+				
+				for (const path of commonWinPaths) {
+					if (path.toLowerCase().startsWith(query.toLowerCase()) && !suggestions.includes(path)) {
+						suggestions.push(path);
+					}
+				}
+			}
+		}
+
 		return suggestions.slice(0, 5); // Limit to 5 suggestions
 	}
 
@@ -1325,20 +1372,31 @@ class pdfPathInputModal extends SuggestModal<string> {
 				cls: "pdf-path-new" 
 			});
 			
-			// Add label based on path type
+			// Add label based on path type and platform
 			let label = "";
+			const isLocalPath = pdfPath.startsWith("/") || pdfPath.startsWith("./") || pdfPath.startsWith("~/") || pdfPath.match(/^[A-Za-z]:/);
+			
 			if (pdfPath.startsWith("http")) {
 				label = "Download from URL";
-			} else if (pdfPath.startsWith("/") || pdfPath.startsWith("./") || pdfPath.startsWith("~/")) {
-				label = "Copy from local path";
+			} else if (isLocalPath) {
+				if (Platform.isDesktop) {
+					label = "Copy from local path";
+				} else {
+					label = "Local path (not supported on mobile)";
+				}
 			} else {
 				label = "Add as path";
 			}
 			
-			// If there's an existing PDF, mention what will happen
+			// If there's an existing PDF, mention what will happen (only on desktop for local paths)
 			if (this.existingPdfPath) {
-				const action = this.settings.overridePdfs ? "replace" : "backup";
-				label += ` (will ${action} existing)`;
+				if (isLocalPath && !Platform.isDesktop) {
+					// Don't mention replace/backup for local paths on mobile since they won't work
+					label = "Local path (not supported on mobile)";
+				} else {
+					const action = this.settings.overridePdfs ? "replace" : "backup";
+					label += ` (will ${action} existing)`;
+				}
 			}
 			
 			containerEl.createDiv({ 
@@ -1351,6 +1409,13 @@ class pdfPathInputModal extends SuggestModal<string> {
 	async onChooseSuggestion(pdfPath: string, evt: MouseEvent | KeyboardEvent) {
 		if (!pdfPath.trim()) {
 			new Notice("Please enter a PDF URL or local path.");
+			return;
+		}
+
+		// Check if user is trying to use a local path on mobile
+		const isLocalPath = pdfPath.startsWith("/") || pdfPath.startsWith("./") || pdfPath.startsWith("~/") || pdfPath.match(/^[A-Za-z]:/);
+		if (isLocalPath && !Platform.isDesktop) {
+			new Notice("Local file copying is only available on desktop platforms. Please use a URL instead.");
 			return;
 		}
 

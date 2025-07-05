@@ -16,9 +16,6 @@ import {
 import { getDate, splitBibtex, formatTimeString, parseBibString } from "./utility";
 import { StructuredPaperData, PaperLibraryCheckResult, PaperLibrarySearchParams } from "./paperData";
 import { exec } from "child_process";
-import { promises as fs } from "fs";
-import { join } from "path";
-import { homedir } from "os";
 
 export class ObsidianScholar {
 	settings: ObsidianScholarPluginSettings;
@@ -599,6 +596,17 @@ export class ObsidianScholar {
 	): Promise<string> {
 		return new Promise(async (resolve, reject) => {
 			try {
+				// Check if running on desktop platform
+				if (!Platform.isDesktop) {
+					reject("Local file copying is only available on desktop platforms. Please use URL downloads on mobile.");
+					return;
+				}
+
+				// Import Node.js modules only on desktop platforms
+				const { promises: fs } = await import("fs");
+				const { join } = await import("path");
+				const { homedir } = await import("os");
+
 				let pdfDownloadFolder = this.settings.pdfDownloadLocation;
 				let pdfSavePath = pdfDownloadFolder + this.pathSep + targetFilename + ".pdf";
 
