@@ -416,8 +416,16 @@ class paperSearchModal extends SuggestModal<PaperSearchModelResult> {
 			) as HTMLInputElement;
 			if (inputEl) {
 				inputEl.value = this.initialQuery;
-				// Trigger search immediately
-				this.searchSemanticScholar(this.initialQuery);
+				// Only trigger search if nothing is in the library
+				// In this case, we will try to compare the title with the library and if it is not found, we will search for it on Semantic Scholar
+				const title = this.initialQuery;
+				// We cannot use fuzzyTitleMatch directly on an array; instead, check if any local paper matches the title
+				const foundInLibrary = this.localPaperData.some(item =>
+					this.obsidianScholar.fuzzyTitleMatch(item.paper.title, title)
+				);
+				if (!foundInLibrary) {
+					this.searchSemanticScholar(this.initialQuery);
+				}
 			}
 		}
 	}

@@ -103,7 +103,7 @@ export class ObsidianScholar {
 		return str.toLowerCase().trim().replace(/[^\w\s]/g, '').replace(/\s+/g, ' ');
 	}
 
-	private fuzzyTitleMatch(paperTitle: string, searchTitle: string): boolean {
+	public fuzzyTitleMatch(paperTitle: string, searchTitle: string): boolean {
 		const normalizedPaperTitle = this.normalizeSearchString(paperTitle);
 		const normalizedSearchTitle = this.normalizeSearchString(searchTitle);
 		
