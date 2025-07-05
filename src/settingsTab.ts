@@ -25,6 +25,8 @@ import {
 	SETTING_FRONTMATTER_ADD_ANNOTATION_DESC,
 	SETTING_S2API_NAME,
 	SETTING_S2API_DESC,
+	SETTING_PDF_OVERRIDE_NAME,
+	SETTING_PDF_OVERRIDE_DESC,
 	NOTICE_NOT_BIB_FILE,
 	NOTICE_NO_BIB_FILE_SELECTED,
 } from "./constants";
@@ -44,6 +46,7 @@ export interface ObsidianScholarPluginSettings {
 	noteAddFrontmatterAnnotation: boolean;
 	s2apikey: string;
 	pathSeparator: string;
+	overridePdfs: boolean;
 }
 
 export const DEFAULT_SETTINGS: ObsidianScholarPluginSettings = {
@@ -58,6 +61,7 @@ export const DEFAULT_SETTINGS: ObsidianScholarPluginSettings = {
 	noteAddFrontmatterAnnotation: false,
 	s2apikey: "",
 	pathSeparator: "",
+	overridePdfs: false,
 };
 
 // Settings Tab
@@ -129,6 +133,18 @@ export class ObsidianScholarSettingTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.pdfDownloadLocation)
 					.onChange(async (value) => {
 						this.plugin.settings.pdfDownloadLocation = value;
+						await this.plugin.saveSettings();
+					})
+			);
+
+		new Setting(containerEl)
+			.setName(SETTING_PDF_OVERRIDE_NAME)
+			.setDesc(SETTING_PDF_OVERRIDE_DESC)
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.plugin.settings.overridePdfs)
+					.onChange(async (value) => {
+						this.plugin.settings.overridePdfs = value;
 						await this.plugin.saveSettings();
 					})
 			);

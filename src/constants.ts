@@ -37,6 +37,9 @@ export const COMMAND_REMOVE_PAPER_NAME = "Remove Paper from Library";
 export const COMMAND_OPEN_PDF_IN_SYSTEM_APP = "open-pdf-in-system-app";
 export const COMMAND_OPEN_PDF_IN_SYSTEM_APP_NAME = "Open PDF in System App";
 
+export const COMMAND_ADD_PAPER_PDF = "add-paper-pdf";
+export const COMMAND_ADD_PAPER_PDF_NAME = "Add Paper PDF";
+
 
 // Settings 
 export const SETTING_GENERAL_HEADER = "Library Settings";
@@ -79,6 +82,9 @@ export const SETTING_TEMPLATE_FOLDER_DEFAULT = "template";
 
 export const SETTING_S2API_NAME = "Semantic Scholar API Key";
 export const SETTING_S2API_DESC = "Provide an Semantic Scholar API key can help you avoid rate limits when calling the API. You can obtain an API key from https://api.semanticscholar.org/.";
+
+export const SETTING_PDF_OVERRIDE_NAME = "Override existing PDFs";
+export const SETTING_PDF_OVERRIDE_DESC = "If enabled, adding a new PDF will replace the existing one. If disabled, the existing PDF will be renamed as a backup with timestamp.";
 
 // NOTICES 
 export const NOTICE_RETRIEVING_ARXIV = "Retrieving paper information from arXiv API.";

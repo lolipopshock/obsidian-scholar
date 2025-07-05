@@ -16,6 +16,9 @@ import {
 import { getDate, splitBibtex, formatTimeString, parseBibString } from "./utility";
 import { StructuredPaperData, PaperLibraryCheckResult, PaperLibrarySearchParams } from "./paperData";
 import { exec } from "child_process";
+import { promises as fs } from "fs";
+import { join } from "path";
+import { homedir } from "os";
 
 export class ObsidianScholar {
 	settings: ObsidianScholarPluginSettings;
@@ -587,6 +590,216 @@ export class ObsidianScholar {
 				this.settings.bibTexFileLocation,
 				newBibtexText
 			);
+		}
+	}
+
+	async copyLocalPdfToLibrary(
+		localPdfPath: string,
+		targetFilename: string
+	): Promise<string> {
+		return new Promise(async (resolve, reject) => {
+			try {
+				let pdfDownloadFolder = this.settings.pdfDownloadLocation;
+				let pdfSavePath = pdfDownloadFolder + this.pathSep + targetFilename + ".pdf";
+
+				// Check if the destination already exists
+				if (await this.app.vault.adapter.exists(pdfSavePath)) {
+					resolve(pdfSavePath);
+					return;
+				}
+
+				let sourceBinary: ArrayBuffer;
+
+				// Check if the path is absolute (external to vault) or relative (within vault)
+				const isAbsolutePath = localPdfPath.startsWith('/') || 
+					localPdfPath.startsWith('\\') || 
+					localPdfPath.match(/^[A-Za-z]:/); // Windows drive letters
+				
+				// Expand tilde (~) for home directory
+				let expandedPath = localPdfPath;
+				if (localPdfPath.startsWith('~/')) {
+					expandedPath = join(homedir(), localPdfPath.slice(2));
+				}
+
+				if (isAbsolutePath || expandedPath !== localPdfPath) {
+					// Handle external file path
+					try {
+						await fs.access(expandedPath); // Check if file exists
+						const fileBuffer = await fs.readFile(expandedPath);
+						sourceBinary = fileBuffer.buffer.slice(fileBuffer.byteOffset, fileBuffer.byteOffset + fileBuffer.byteLength);
+					} catch (error) {
+						reject("Source PDF file not found or cannot be accessed: " + expandedPath);
+						return;
+					}
+				} else {
+					// Handle vault file path
+					if (!await this.app.vault.adapter.exists(localPdfPath)) {
+						reject("Source PDF file not found in vault: " + localPdfPath);
+						return;
+					}
+					sourceBinary = await this.app.vault.adapter.readBinary(localPdfPath);
+				}
+
+				// Create the destination file in the vault
+				await this.app.vault.createBinary(pdfSavePath, sourceBinary);
+				
+				resolve(pdfSavePath);
+			} catch (error) {
+				reject("Failed to copy PDF: " + error);
+			}
+		});
+	}
+
+	async updateNotePdfPath(notePath: string, pdfPath: string): Promise<void> {
+		try {
+			let noteFile = this.app.vault.getAbstractFileByPath(notePath);
+			if (noteFile == null || !(noteFile instanceof TFile)) {
+				throw new Error("Note file not found.");
+			}
+
+			// Get the current content
+			let content = await this.app.vault.read(noteFile);
+			
+			// Parse frontmatter
+			let frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---/);
+			if (!frontmatterMatch) {
+				throw new Error("No frontmatter found in note.");
+			}
+
+			let frontmatterContent = frontmatterMatch[1];
+			let bodyContent = content.slice(frontmatterMatch[0].length);
+
+			// Split frontmatter into lines for more precise handling
+			let frontmatterLines = frontmatterContent.split('\n');
+			let pdfLinkFormat = `[[${pdfPath}]]`;
+			let pdfLineFound = false;
+
+			// Look for existing pdf line and replace it
+			for (let i = 0; i < frontmatterLines.length; i++) {
+				if (frontmatterLines[i].match(/^pdf:\s*/)) {
+					frontmatterLines[i] = `pdf: "${pdfLinkFormat}"`;
+					pdfLineFound = true;
+					break;
+				}
+			}
+
+			// If no pdf line found, add it
+			if (!pdfLineFound) {
+				frontmatterLines.push(`pdf: "${pdfLinkFormat}"`);
+			}
+
+			// Reconstruct frontmatter
+			let newFrontmatterContent = frontmatterLines.join('\n');
+
+			// Reconstruct the file content
+			let newContent = `---\n${newFrontmatterContent}\n---${bodyContent}`;
+			
+			// Write the updated content
+			await this.app.vault.modify(noteFile, newContent);
+			
+			new Notice("PDF path updated successfully.");
+		} catch (error) {
+			new Notice("Failed to update note: " + error);
+			throw error;
+		}
+	}
+
+	async addPdfToPaper(notePath: string, pdfSource: string): Promise<void> {
+		try {
+			let noteFile = this.app.vault.getAbstractFileByPath(notePath);
+			if (noteFile == null || !(noteFile instanceof TFile)) {
+				throw new Error("Note file not found.");
+			}
+
+			let paperData = this.getPaperDataFromLocalFile(noteFile);
+			let paperFilename = this.constructFileName(paperData);
+			let pdfPath: string;
+
+			// Handle existing PDF if there is one
+			if (paperData.pdfPath) {
+				if (this.settings.overridePdfs) {
+					// Remove existing PDF
+					await this.removeExistingPdf(paperData.pdfPath);
+					console.log("Existing PDF removed.");
+				} else {
+					// Create backup of existing PDF
+					await this.createPdfBackup(paperData.pdfPath);
+					await this.removeExistingPdf(paperData.pdfPath);
+				}
+			}
+
+			// Check if it's a URL or local path
+			if (pdfSource.startsWith("http://") || pdfSource.startsWith("https://")) {
+				// Download from URL
+				pdfPath = await this.downloadPdf(pdfSource, paperFilename);
+			} else {
+				// Copy from local path
+				pdfPath = await this.copyLocalPdfToLibrary(pdfSource, paperFilename);
+			}
+
+			// Update the note's frontmatter
+			await this.updateNotePdfPath(notePath, pdfPath);
+			
+		} catch (error) {
+			new Notice("Failed to add PDF to paper: " + error);
+			throw error;
+		}
+	}
+
+	async createPdfBackup(existingPdfPath: string): Promise<void> {
+		try {
+			// Check if the existing PDF file exists
+			if (!await this.app.vault.adapter.exists(existingPdfPath)) {
+				// If the file doesn't exist, no need to create backup
+				return;
+			}
+
+			// Generate backup filename with timestamp
+			const now = new Date();
+			const timestamp = now.getFullYear().toString() + '.' +
+				(now.getMonth() + 1).toString().padStart(2, '0') + '.' +
+				now.getDate().toString().padStart(2, '0') + '.' +
+				now.getHours().toString().padStart(2, '0') + '.' +
+				now.getMinutes().toString().padStart(2, '0');
+
+			// Extract filename without extension
+			const pathParts = existingPdfPath.split(this.pathSep);
+			const fileName = pathParts[pathParts.length - 1];
+			const fileNameWithoutExt = fileName.replace(/\.pdf$/i, '');
+			const directory = pathParts.slice(0, -1).join(this.pathSep);
+			
+			const backupFileName = `${fileNameWithoutExt}.backup.${timestamp}.pdf`;
+			const backupPath = directory + this.pathSep + backupFileName;
+
+			// Read the existing PDF
+			const existingPdfData = await this.app.vault.adapter.readBinary(existingPdfPath);
+			
+			// Create the backup
+			await this.app.vault.createBinary(backupPath, existingPdfData);
+			
+			new Notice(`PDF backup created: ${backupFileName}`);
+		} catch (error) {
+			new Notice("Failed to create PDF backup: " + error);
+			throw error;
+		}
+	}
+
+	async removeExistingPdf(existingPdfPath: string): Promise<void> {
+		try {
+			// Check if the existing PDF file exists
+			if (!await this.app.vault.adapter.exists(existingPdfPath)) {
+				// If the file doesn't exist, no need to remove
+				return;
+			}
+
+			const existingPdfFile = this.app.vault.getAbstractFileByPath(existingPdfPath);
+			if (existingPdfFile && existingPdfFile instanceof TFile) {
+				await this.app.vault.delete(existingPdfFile);
+				new Notice("Existing PDF removed.");
+			}
+		} catch (error) {
+			new Notice("Failed to remove existing PDF: " + error);
+			throw error;
 		}
 	}
 }

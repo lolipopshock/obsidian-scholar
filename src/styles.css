@@ -51,3 +51,36 @@
 	display: inline-block;
 	margin-right: 5px;
 }
+
+.pdf-path-suggestion {
+	padding: var(--size-4-2);
+}
+
+.pdf-path-existing {
+	font-size: var(--font-ui-medium);
+	font-weight: var(--font-medium);
+	color: var(--text-accent);
+	margin-bottom: var(--size-4-1);
+}
+
+.pdf-path-new {
+	font-size: var(--font-ui-medium);
+	font-weight: var(--font-medium);
+	color: var(--text-normal);
+	margin-bottom: var(--size-4-1);
+}
+
+.pdf-path-label {
+	color: var(--text-faint);
+	font-size: var(--font-ui-small);
+	font-weight: var(--font-light);
+	font-style: italic;
+}
+
+/* Update the description styling for suggest modal */
+.modal-container .add-paper-pdf-description {
+	color: var(--text-faint);
+	margin-bottom: var(--size-4-3);
+	padding: 0 var(--size-4-3);
+	text-align: center;
+}
